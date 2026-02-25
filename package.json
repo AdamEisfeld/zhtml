@@ -1,0 +1,32 @@
+{
+  "name": "zhtml",
+  "version": "0.1.0",
+  "description": "Three.js HTML renderer - render HTML elements in 3D by mapping DOM elements to WebGL geometry via CSS transforms",
+  "type": "module",
+  "main": "./dist/zhtml.js",
+  "module": "./dist/zhtml.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/zhtml.js",
+      "default": "./dist/zhtml.js"
+    }
+  },
+  "files": ["dist", "EXPLAIN.md"],
+  "scripts": {
+    "build": "vite build",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "three": "^0.159.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/three": "^0.160.0",
+    "three": "^0.159.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.8.0"
+  }
+}
