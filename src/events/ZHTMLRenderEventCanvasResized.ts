@@ -6,10 +6,10 @@ export class ZHTMLRenderEventCanvasResized extends Event {
 	public readonly element: HTMLElement;
 	public readonly bounds: DOMRectReadOnly;
 
-	public static readonly event_name = 'ZHTMLRenderEventCanvasResized';
+	public static readonly eventName = 'ZHTMLRenderEventCanvasResized';
 
 	constructor(options: { element: HTMLElement, bounds: DOMRectReadOnly }) {
-		super(ZHTMLRenderEventCanvasResized.event_name);
+		super(ZHTMLRenderEventCanvasResized.eventName);
 		this.element = options.element;
 		this.bounds = options.bounds;
 	}

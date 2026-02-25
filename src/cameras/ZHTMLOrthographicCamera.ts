@@ -11,22 +11,22 @@ export class ZHTMLOrthographicCamera extends THREE.OrthographicCamera implements
 
 	// MARK: - ZHTMLCameraInterface Properties
 
-	public html_needs_layout: boolean = true;
+	public htmlNeedsLayout: boolean = true;
 
-	private _html_transform_style: string | null = null;
-	private _html_transform_id: number = 1;
-	private _html_applied_bounds: DOMRectReadOnly | null = null;
+	private _htmlTransformStyle: string | null = null;
+	private _htmlTransformId: number = 1;
+	private _htmlAppliedBounds: DOMRectReadOnly | null = null;
 
-	public current_render_target: ZHTMLRenderTarget | null = null;
+	public currentRenderTarget: ZHTMLRenderTarget | null = null;
 
 	// MARK: - ZHTMLCameraInterface Accessors
 
-	public get html_transform_style(): string | null {
-		return this._html_transform_style;
+	public get htmlTransformStyle(): string | null {
+		return this._htmlTransformStyle;
 	}
 
-	public get html_transform_id(): number {
-		return this._html_transform_id;
+	public get htmlTransformId(): number {
+		return this._htmlTransformId;
 	}
 
 	public get fov(): number {
@@ -42,10 +42,10 @@ export class ZHTMLOrthographicCamera extends THREE.OrthographicCamera implements
 			this.updateMatrixWorld();
 		}
 		const anyCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera = this as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-		this._html_transform_style = getCameraTransformStyle({
-			camera_projection_matrix: this.projectionMatrix.elements,
-			camera_matrix_world_inverse: this.matrixWorldInverse.elements,
-			render_size: {
+		this._htmlTransformStyle = getCameraTransformStyle({
+			cameraProjectionMatrix: this.projectionMatrix.elements,
+			cameraMatrixWorldInverse: this.matrixWorldInverse.elements,
+			renderSize: {
 				width: options.bounds.width,
 				height: options.bounds.height,
 			},
@@ -62,14 +62,14 @@ export class ZHTMLOrthographicCamera extends THREE.OrthographicCamera implements
 				y: anyCamera.view.offsetY,
 			} : null,
 		});
-		this._html_transform_id *= -1;
+		this._htmlTransformId *= -1;
 	}
 
 	public willRender(options: { bounds: DOMRectReadOnly }): void {
-		if (this._html_applied_bounds?.width === options.bounds.width && this._html_applied_bounds?.height === options.bounds.height) {
+		if (this._htmlAppliedBounds?.width === options.bounds.width && this._htmlAppliedBounds?.height === options.bounds.height) {
 			return;
 		}
-		this._html_applied_bounds = options.bounds;
+		this._htmlAppliedBounds = options.bounds;
 		this.left = -options.bounds.width / 2;
 		this.right = options.bounds.width / 2;
 		this.top = options.bounds.height / 2;
@@ -91,11 +91,11 @@ export class ZHTMLOrthographicCamera extends THREE.OrthographicCamera implements
 		height: number,
 	} {
 		const { distance } = options;
-		const quad_height = (this.top - this.bottom) * (distance) / this.zoom;
-		const quad_width = (this.right - this.left) * (distance) / this.zoom;
+		const quadHeight = (this.top - this.bottom) * (distance) / this.zoom;
+		const quadWidth = (this.right - this.left) * (distance) / this.zoom;
 		return {
-			width: quad_width,
-			height: quad_height,
+			width: quadWidth,
+			height: quadHeight,
 		};
 
 	}

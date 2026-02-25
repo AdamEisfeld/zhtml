@@ -8,7 +8,7 @@ import { ZHTMLShaderMaterial } from './ZHTMLShaderMaterial';
  * 
  * We also use this material to "cut a hole" into the final rendered scene so that the HTML elements behind the WebGL canvas can show through.
  * 
- * The show_fill uniform is used to toggle whether or not the material is actually rendered with color. We toggle it on when
+ * The showFill uniform is used to toggle whether or not the material is actually rendered with color. We toggle it on when
  * doing an off-screen pass, then we toggle it back off before rendering the scene to the screen.
  */
 export class ZHTMLInternalMaterialEmbed extends ZHTMLShaderMaterial {
@@ -26,7 +26,7 @@ export class ZHTMLInternalMaterialEmbed extends ZHTMLShaderMaterial {
 			}`,
 			fragmentShader: /* glsl */`
 			
-			#include <begin_html>
+			#include <beginHtml>
 			#include <fog_pars_fragment>
 			
 			void main() {
@@ -35,8 +35,8 @@ export class ZHTMLInternalMaterialEmbed extends ZHTMLShaderMaterial {
 
 				#ifdef USE_HTML
 
-					if (html_pixel_test_enabled > 0) {
-						gl_FragColor = vec4(html_pixel_test_color.rgb, 1);
+					if (htmlPixelTestEnabled > 0) {
+						gl_FragColor = vec4(htmlPixelTestColor.rgb, 1);
 						return;
 					}
 

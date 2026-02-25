@@ -24,15 +24,15 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	/**
 	 * Used to determine if the object's transform style needs to be updated. Set it to true whenever the object's transform changes.
 	 */
-	public html_needs_layout: boolean = true;
+	public htmlNeedsLayout: boolean = true;
 
 
 	
 	// MARK: - Private Properties
 
-	private _html_geometry_node: THREE.Mesh | null = null;
-	private _html_transform_style: string | null = null;
-	private _html_transform_id: number = 1;
+	private _htmlGeometryNode: THREE.Mesh | null = null;
+	private _htmlTransformStyle: string | null = null;
+	private _htmlTransformId: number = 1;
 
 
 
@@ -43,8 +43,8 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	/**
 	 * The geometry node that will be added to this object's children and used to represent the HTML element(s) in the WebGL world. This node (and it's children, recursively) will get a special material applied that will render the HTML element(s) to the screen.
 	 */
-	public get html_geometry_node(): THREE.Mesh | null {
-		return this._html_geometry_node;
+	public get htmlGeometryNode(): THREE.Mesh | null {
+		return this._htmlGeometryNode;
 	}
 
 	// Geometry Nodes
@@ -52,13 +52,13 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	/**
 	 * The geometry nodes that will be added to this object's children and used to represent the HTML element(s) in the WebGL world. These nodes (and their children, recursively) will get a special material applied that will render the HTML element(s) to the screen.
 	 */
-	public set html_geometry_node(value: THREE.Mesh | null) {
+	public set htmlGeometryNode(value: THREE.Mesh | null) {
 		
-		if (this._html_geometry_node) {
-			this.remove(this._html_geometry_node);
+		if (this._htmlGeometryNode) {
+			this.remove(this._htmlGeometryNode);
 		}
 
-		this._html_geometry_node = value;
+		this._htmlGeometryNode = value;
 
 		if (!value) {
 			return;
@@ -94,8 +94,8 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	/**
 	 * This is the latest transform style that was generated for the HTML element(s) tied to this object.
 	 */
-	public get html_transform_style(): string | null {
-		return this._html_transform_style;
+	public get htmlTransformStyle(): string | null {
+		return this._htmlTransformStyle;
 	}
 
 	// Transform ID
@@ -104,8 +104,8 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	 * This is used to determine if the transform style has changed since the last time it was checked.
 	 * Internally, the object will update it to some new value whenever the transform style is updated.
 	 */
-	public get html_transform_id(): number {
-		return this._html_transform_id;
+	public get htmlTransformId(): number {
+		return this._htmlTransformId;
 	}
 
 
@@ -114,11 +114,11 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	// MARK: - Constructor
 
 	/**
-	 * @param options.geometry_node The geometry node that will be added to this object's children and used to represent the HTML element(s) in the WebGL world.
+	 * @param options.geometryNode The geometry node that will be added to this object's children and used to represent the HTML element(s) in the WebGL world.
 	 */
-	public constructor(options?: { geometry_node?: THREE.Mesh }) {
+	public constructor(options?: { geometryNode?: THREE.Mesh }) {
 		super();
-		this.html_geometry_node = options?.geometry_node === undefined ? null : options.geometry_node;
+		this.htmlGeometryNode = options?.geometryNode === undefined ? null : options.geometryNode;
 	}
 
 
@@ -172,10 +172,10 @@ export class ZHTMLObject3D extends THREE.Object3D {
 	 * Rebuilds the CSS transform style for the HTML element(s) tied to this object.
 	 */
 	public htmlUpdateLayout() {
-		this._html_transform_style = getElementTransformStyle({
+		this._htmlTransformStyle = getElementTransformStyle({
 			elementMatrixWorld: this.matrixWorld.elements,
 		});
-		this._html_transform_id *= -1;
+		this._htmlTransformId *= -1;
 	}
 
 }

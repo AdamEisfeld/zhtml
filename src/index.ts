@@ -6,8 +6,8 @@ export { ZHTMLRenderTarget } from './render/ZHTMLRenderTarget';
 export type {
   ZHTMLRenderAdapterInterface,
   ZHTMLRenderAdapterOffscreenTargetInterface,
-} from './render_adapters/ZHTMLRenderAdapterInterface';
-export { ZHTMLWebGLRenderAdapter } from './render_adapters/ZHTMLWebGLRenderAdapter';
+} from './renderAdapters/ZHTMLRenderAdapterInterface';
+export { ZHTMLWebGLRenderAdapter } from './renderAdapters/ZHTMLWebGLRenderAdapter';
 
 // Cameras
 export type { ZHTMLCameraInterface } from './cameras/ZHTMLCameraInterface';
@@ -27,7 +27,7 @@ export { ZHTMLQuad } from './objects/ZHTMLQuad';
 export {
   ZHTMLGeometrySolverPlane,
   type ZHTMLGeometrySolverPlaneConfig,
-} from './geometry_solvers/ZHTMLGeometrySolverPlane';
+} from './geometrySolvers/ZHTMLGeometrySolverPlane';
 
 // Raycast
 export { ZHTMLRaycast } from './raycast/ZHTMLRaycast';

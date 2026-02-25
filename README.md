@@ -42,7 +42,7 @@ glRenderer.shadowMap.enabled = true;
 
 // 2. Create zhtml renderer and render target
 const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
-const htmlRenderer = new ZHTMLRenderer({ render_adapter: renderAdapter });
+const htmlRenderer = new ZHTMLRenderer({ renderAdapter });
 const renderTarget = new ZHTMLRenderTarget({ type: 'embed' });
 
 // 3. Create camera and add to scene
@@ -56,7 +56,7 @@ const geometrySolver = new ZHTMLGeometrySolverPlane({
   object: htmlObject,
   config: { style: 'explicit', size: { width: 400, height: 300 } },
 });
-htmlObject.html_geometry_node = geometrySolver.geometry_node;
+htmlObject.htmlGeometryNode = geometrySolver.geometryNode;
 
 const effectMaterial = new ZHTMLMaterialPhong();
 const effectNode = new THREE.Mesh(
@@ -75,8 +75,8 @@ document.getElementById('gl-container')!.appendChild(htmlRenderer.element);
 // 6. Animation loop
 function animate() {
   requestAnimationFrame(animate);
-  htmlObject.html_needs_layout = true;
-  htmlRenderer.render({ scene, camera, render_target: renderTarget });
+  htmlObject.htmlNeedsLayout = true;
+  htmlRenderer.render({ scene, camera, renderTarget });
 }
 animate();
 ```
@@ -106,7 +106,7 @@ zhtml requires a specific DOM structure so it can find and position HTML element
 <div name="gl_container" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></div>
 ```
 
-The WebGL canvas (`htmlRenderer.element`) and the scene/camera divs must be siblings within the same positioned container. The render target's `scene_element` and `camera_element` are resolved via `document.querySelector` using the render target's UUID. Use `buildSceneContainer` and `buildCameraContainer` from `zhtml` if creating the structure programmatically; you must still add the `data-render-target-uuid` and `data-render-target-type` attributes to link them to your render target.
+The WebGL canvas (`htmlRenderer.element`) and the scene/camera divs must be siblings within the same positioned container. The render target's `sceneElement` and `cameraElement` are resolved via `document.querySelector` using the render target's UUID. Use `buildSceneContainer` and `buildCameraContainer` from `zhtml` if creating the structure programmatically; you must still add the `data-render-target-uuid` and `data-render-target-type` attributes to link them to your render target.
 
 ## Render Targets
 
@@ -121,13 +121,13 @@ The WebGL canvas (`htmlRenderer.element`) and the scene/camera divs must be sibl
 By default, the scene element has `pointer-events: none` so mouse events pass through to orbit controls. When the cursor is over HTML (detected via raycast), call:
 
 ```ts
-renderTarget.enableInteractions({ obstructing_elements: [glRenderer.domElement] });
+renderTarget.enableInteractions({ obstructingElements: [glRenderer.domElement] });
 ```
 
 This enables pointer events on the HTML and disables them on the WebGL canvas. When not over HTML:
 
 ```ts
-renderTarget.disableInteractions({ obstructing_elements: [glRenderer.domElement] });
+renderTarget.disableInteractions({ obstructingElements: [glRenderer.domElement] });
 ```
 
 ## Cameras
@@ -165,16 +165,16 @@ stereoCamera.position.set(0, 0, 800);
 scene.add(stereoCamera);
 
 // Render to two targets
-htmlRenderer.render({ scene, camera: stereoCamera.camera_left, render_target: leftTarget });
-htmlRenderer.render({ scene, camera: stereoCamera.camera_right, render_target: rightTarget });
+htmlRenderer.render({ scene, camera: stereoCamera.cameraLeft, renderTarget: leftTarget });
+htmlRenderer.render({ scene, camera: stereoCamera.cameraRight, renderTarget: rightTarget });
 ```
 
 ## ZHTMLObject3D
 
 Extends `THREE.Object3D`. Links 3D geometry to DOM elements.
 
-- **`html_geometry_node`** — A `THREE.Mesh` whose material renders the HTML (usually `ZHTMLInternalMaterialEmbed` or `ZHTMLInternalMaterialOverlay`). The mesh defines the screen-space region where HTML appears.
-- **`html_needs_layout`** — Set to `true` when the object's transform changes; the renderer will update the HTML element's CSS transform.
+- **`htmlGeometryNode`** — A `THREE.Mesh` whose material renders the HTML (usually `ZHTMLInternalMaterialEmbed` or `ZHTMLInternalMaterialOverlay`). The mesh defines the screen-space region where HTML appears.
+- **`htmlNeedsLayout`** — Set to `true` when the object's transform changes; the renderer will update the HTML element's CSS transform.
 - **`htmlUpdateLayout()`** — Call to recompute the transform style from the object's world matrix.
 - **`getAllElements()`** — Returns all DOM elements with `data-object-uuid` matching this object's UUID.
 
@@ -195,7 +195,7 @@ const solver = new ZHTMLGeometrySolverPlane({
   object: htmlObject,
   config: { style: 'explicit', size: { width: 400, height: 300 } },
 });
-htmlObject.html_geometry_node = solver.geometry_node;
+htmlObject.htmlGeometryNode = solver.geometryNode;
 ```
 
 ## Materials
@@ -224,7 +224,7 @@ htmlObject.add(effectNode);
 
 ### Custom Materials
 
-Extend `ZHTMLShaderMaterial` and use the `#define HTML_PHONG` or `#include <begin_html>` chunk. The material must support `html_pixel_test_enabled` and `html_pixel_test_color` uniforms for hit testing (see `ZHTMLShaderMaterial`).
+Extend `ZHTMLShaderMaterial` and use the `#define HTML_PHONG` or `#include <beginHtml>` chunk. The material must support `htmlPixelTestEnabled` and `htmlPixelTestColor` uniforms for hit testing (see `ZHTMLShaderMaterial`).
 
 ## Hit Testing (Raycast)
 
@@ -233,7 +233,7 @@ Extend `ZHTMLShaderMaterial` and use the `#define HTML_PHONG` or `#include <begi
 Renders the scene to an offscreen target with color picking and reads the pixel at the cursor. Use to detect when the cursor is over any HTML (respecting occlusion).
 
 ```ts
-const raycastQuad = new ZHTMLQuad({ render_adapter });
+const raycastQuad = new ZHTMLQuad({ renderAdapter });
 const raycast = new ZHTMLRaycast();
 
 const result = raycast.intersectRenderedPixels({
@@ -241,31 +241,31 @@ const result = raycast.intersectRenderedPixels({
   renderer: htmlRenderer,
   scene,
   camera,
-  render_target: renderTarget,
-  window_x: mouseX,
-  window_y: mouseY,
+  renderTarget,
+  windowX: mouseX,
+  windowY: mouseY,
 });
 
 if (result) {
   // Cursor is over HTML
-  renderTarget.enableInteractions({ obstructing_elements: [glRenderer.domElement] });
+  renderTarget.enableInteractions({ obstructingElements: [glRenderer.domElement] });
 } else {
-  renderTarget.disableInteractions({ obstructing_elements: [glRenderer.domElement] });
+  renderTarget.disableInteractions({ obstructingElements: [glRenderer.domElement] });
 }
 ```
 
 ### Object-based: `intersectRenderedObjects`
 
-Uses Three.js `Raycaster` to intersect scene objects. Returns `ZHTMLRaycastObjectsResult[]` with `html: { object, element, render_target }` when the hit is on a `ZHTMLObject3D`, plus the raw `intersection`.
+Uses Three.js `Raycaster` to intersect scene objects. Returns `ZHTMLRaycastObjectsResult[]` with `html: { object, element, renderTarget }` when the hit is on a `ZHTMLObject3D`, plus the raw `intersection`.
 
 ```ts
 const results = raycast.intersectRenderedObjects({
   renderer: htmlRenderer,
   scene,
   camera,
-  render_target: renderTarget,
-  window_x: mouseX,
-  window_y: mouseY,
+  renderTarget,
+  windowX: mouseX,
+  windowY: mouseY,
 });
 
 for (const r of results) {
@@ -307,29 +307,29 @@ When a `ZHTMLObject3D` moves, rotates, or scales, set `html_needs_layout = true`
 
 ```ts
 htmlObject.position.x += 1;
-htmlObject.html_needs_layout = true;
-htmlRenderer.render({ scene, camera, render_target });
+htmlObject.htmlNeedsLayout = true;
+htmlRenderer.render({ scene, camera, renderTarget });
 ```
 
-For cameras, set `camera.html_needs_layout = true` when the camera or its projection changes.
+For cameras, set `camera.htmlNeedsLayout = true` when the camera or its projection changes.
 
 ## Typical Render Loop
 
 ```ts
 function renderLoop() {
   // 1. Update layout flags
-  camera.html_needs_layout = true;
+  camera.htmlNeedsLayout = true;
   scene.traverse((obj) => {
-    if (obj instanceof ZHTMLObject3D) obj.html_needs_layout = true;
+    if (obj instanceof ZHTMLObject3D) obj.htmlNeedsLayout = true;
   });
 
   // 2. Hit test (optional)
-  const hit = raycast.intersectRenderedPixels({ quad, renderer, scene, camera, render_target, window_x: mx, window_y: my });
-  if (hit) renderTarget.enableInteractions({ obstructing_elements: [glRenderer.domElement] });
-  else renderTarget.disableInteractions({ obstructing_elements: [glRenderer.domElement] });
+  const hit = raycast.intersectRenderedPixels({ quad, renderer, scene, camera, renderTarget, windowX: mx, windowY: my });
+  if (hit) renderTarget.enableInteractions({ obstructingElements: [glRenderer.domElement] });
+  else renderTarget.disableInteractions({ obstructingElements: [glRenderer.domElement] });
 
   // 3. Render
-  htmlRenderer.render({ scene, camera, render_target });
+  htmlRenderer.render({ scene, camera, renderTarget });
 
   // 4. Update controls
   controls.update();
@@ -392,7 +392,7 @@ The demos configure this in their Vite config.
 | `ZHTMLWebGLRenderAdapter` | WebGL render adapter; wraps `THREE.WebGLRenderer` |
 | `ZHTMLPerspectiveCamera` | Perspective camera with HTML alignment |
 | `ZHTMLOrthographicCamera` | Orthographic camera with HTML alignment |
-| `ZHTMLStereoCamera` | Stereo camera with `camera_left` and `camera_right` |
+| `ZHTMLStereoCamera` | Stereo camera with `cameraLeft` and `cameraRight` |
 | `ZHTMLObject3D` | 3D object linked to DOM elements |
 | `ZHTMLQuad` | Offscreen quad for pixel raycasting |
 | `ZHTMLGeometrySolverPlane` | Plane geometry solver (explicit, implicit, or none) |
@@ -415,10 +415,10 @@ The library must be built before use. From the project root: `npm run build`. Wh
 
 ### Pink or colored overlay on screen
 
-The hit-detection render pass uses a debug quad. If you see `showQuad` or similar in your code with `show_debug_quad = true`, set it to `false` to hide the overlay. The quad is used internally for pixel-based raycasting; the debug overlay is optional.
+The hit-detection render pass uses a debug quad. If you see `showQuad` or similar in your code with `showDebugQuad = true`, set it to `false` to hide the overlay. The quad is used internally for pixel-based raycasting; the debug overlay is optional.
 
 ### HTML elements not visible
 
 - Ensure each HTML container has `data-object-uuid` matching the `ZHTMLObject3D.uuid`.
 - Ensure the render target's scene/camera divs have the correct `data-render-target-uuid` and `data-render-target-type`.
-- Call `htmlObject.html_needs_layout = true` before rendering when the object's transform changes.
+- Call `htmlObject.htmlNeedsLayout = true` before rendering when the object's transform changes.

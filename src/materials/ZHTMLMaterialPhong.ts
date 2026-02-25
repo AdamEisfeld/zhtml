@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ZHTMLShaderMaterial } from './ZHTMLShaderMaterial';
 
-const glsl_vertex =
+const glslVertex =
 /* glsl */`
 #define HTML_PHONG
 
@@ -51,7 +51,7 @@ void main() {
 }
 `;
 
-const glsl_fragment =
+const glslFragment =
 /* glsl */`
 #define HTML_PHONG
 
@@ -87,13 +87,13 @@ uniform float opacity;
 #include <specularmap_pars_fragment>
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
-#include <begin_html>
+#include <beginHtml>
 
 void main() {
 
 	#ifdef USE_HTML
 
-		if (html_pixel_test_enabled > 0) {
+		if (htmlPixelTestEnabled > 0) {
 			// Don't write a color, we don't want the phong material obstructing the pixel test.
 			return;
 		}
@@ -167,8 +167,8 @@ export class ZHTMLMaterialPhong extends ZHTMLShaderMaterial {
 
 	constructor() {
 		super({
-			vertexShader: glsl_vertex,
-			fragmentShader: glsl_fragment,
+			vertexShader: glslVertex,
+			fragmentShader: glslFragment,
 			uniforms: THREE.UniformsUtils.merge(
 				[
 					THREE.UniformsLib[ "common" ],

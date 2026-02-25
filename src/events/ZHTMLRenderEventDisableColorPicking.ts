@@ -1,9 +1,9 @@
 export class ZHTMLRenderEventDisableColorPicking extends Event {
 
-	public static readonly event_name = 'ZHTMLRenderEventDisableColorPicking';
+	public static readonly eventName = 'ZHTMLRenderEventDisableColorPicking';
 
 	constructor() {
-		super(ZHTMLRenderEventDisableColorPicking.event_name);
+		super(ZHTMLRenderEventDisableColorPicking.eventName);
 	}
 
 }

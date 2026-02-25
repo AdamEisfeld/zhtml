@@ -11,22 +11,22 @@ export class ZHTMLPerspectiveCamera extends THREE.PerspectiveCamera implements Z
 	
 	// MARK: - ZHTMLCameraInterface Properties
 
-	public html_needs_layout: boolean = true;
+	public htmlNeedsLayout: boolean = true;
 	
-	private _html_transform_id: number = 1;
-	private _html_transform_style: string | null = null;
-	private _html_applied_bounds: DOMRectReadOnly | null = null;
+	private _htmlTransformId: number = 1;
+	private _htmlTransformStyle: string | null = null;
+	private _htmlAppliedBounds: DOMRectReadOnly | null = null;
 
-	public current_render_target: ZHTMLRenderTarget | null = null;
+	public currentRenderTarget: ZHTMLRenderTarget | null = null;
 
 	// MARK: - ZHTMLCameraInterface Accessors
 
-	public get html_transform_style(): string | null {
-		return this._html_transform_style;
+	public get htmlTransformStyle(): string | null {
+		return this._htmlTransformStyle;
 	}
 
-	public get html_transform_id(): number {
-		return this._html_transform_id;
+	public get htmlTransformId(): number {
+		return this._htmlTransformId;
 	}
 
 	// MARK: - ZHTMLCameraInterface Methods
@@ -40,10 +40,10 @@ export class ZHTMLPerspectiveCamera extends THREE.PerspectiveCamera implements Z
 			this.updateMatrixWorld();
 		}
 		const anyCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera = this as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-		this._html_transform_style = getCameraTransformStyle({
-			camera_projection_matrix: this.projectionMatrix.elements,
-			camera_matrix_world_inverse: this.matrixWorldInverse.elements,
-			render_size: {
+		this._htmlTransformStyle = getCameraTransformStyle({
+			cameraProjectionMatrix: this.projectionMatrix.elements,
+			cameraMatrixWorldInverse: this.matrixWorldInverse.elements,
+			renderSize: {
 				width: options.bounds.width,
 				height: options.bounds.height,
 			},
@@ -55,14 +55,14 @@ export class ZHTMLPerspectiveCamera extends THREE.PerspectiveCamera implements Z
 				y: anyCamera.view.offsetY,
 			} : null,
 		});
-		this._html_transform_id *= -1;
+		this._htmlTransformId *= -1;
 	}
 
 	public willRender(options: { bounds: DOMRectReadOnly }): void {
-		if (this._html_applied_bounds?.width === options.bounds.width && this._html_applied_bounds?.height === options.bounds.height) {
+		if (this._htmlAppliedBounds?.width === options.bounds.width && this._htmlAppliedBounds?.height === options.bounds.height) {
 			return;
 		}
-		this._html_applied_bounds = options.bounds;
+		this._htmlAppliedBounds = options.bounds;
 		this.aspect = options.bounds.width / options.bounds.height;
 		this.updateProjectionMatrix();
 	}
@@ -80,9 +80,9 @@ export class ZHTMLPerspectiveCamera extends THREE.PerspectiveCamera implements Z
 		width: number,
 		height: number,
 	} {
-		const scale_height = 2 * Math.tan(THREE.MathUtils.degToRad(this.fov) / 2) * options.distance;
-		const scale_width = scale_height * this.aspect;
-		return { width: scale_width, height: scale_height };
+		const scaleHeight = 2 * Math.tan(THREE.MathUtils.degToRad(this.fov) / 2) * options.distance;
+		const scaleWidth = scaleHeight * this.aspect;
+		return { width: scaleWidth, height: scaleHeight };
 	}
 
 	public getQuadDistance(options: { width: number, height: number }): number {

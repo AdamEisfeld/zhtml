@@ -10,22 +10,22 @@ export interface ZHTMLCameraInterface {
 	/**
 	 * The transform style for this camera, which will be applied to the camera div tied to this camera's render target.
 	 */
-	html_transform_style: string | null;
+	htmlTransformStyle: string | null;
 
 	/**
 	 * A flag that is set to true when the camera needs to be laid out again. The renderer uses this internally to determine if it needs to call htmlUpdateLayout() on the camera when ready.
 	 */
-	html_needs_layout: boolean;
+	htmlNeedsLayout: boolean;
 
 	/**
 	 * A number that should change each time the camera's transform style changes. The renderer uses this internally to determine if it has applied the latest transform style to the camera div or not.
 	 */
-	html_transform_id: number;
+	htmlTransformId: number;
 
 	// MARK: - Methods
 
 	/**
-	 * Cameras should update their html_transform_style and html_transform_id properties here.
+	 * Cameras should update their htmlTransformStyle and htmlTransformId properties here.
 	 */
 	htmlUpdateLayout(options: { bounds: DOMRectReadOnly }): void;
 

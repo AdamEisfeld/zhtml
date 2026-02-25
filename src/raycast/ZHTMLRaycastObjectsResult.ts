@@ -6,7 +6,7 @@ export type ZHTMLRaycastObjectsResult = {
 	html: {
 		element: HTMLElement,
 		object: ZHTMLObject3D,
-		render_target: ZHTMLRenderTarget,
+		renderTarget: ZHTMLRenderTarget,
 	} | null,
 	intersection: THREE.Intersection,
 };

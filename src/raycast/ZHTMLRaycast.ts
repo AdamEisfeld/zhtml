@@ -12,66 +12,66 @@ import { ZHTMLShaderMaterial } from '../materials/ZHTMLShaderMaterial';
 
 export class ZHTMLRaycast {
 
-	intersectRenderedPixels(options: { quad: ZHTMLQuad, renderer: ZHTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget, window_x: number, window_y: number }): ZHTMLRaycastPixelsResult | null {
+	intersectRenderedPixels(options: { quad: ZHTMLQuad, renderer: ZHTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, renderTarget: ZHTMLRenderTarget, windowX: number, windowY: number }): ZHTMLRaycastPixelsResult | null {
 
-		const render_target = options.render_target;
+		const renderTarget = options.renderTarget;
 
-		if (render_target.bounds.width === 0 || render_target.bounds.height === 0) {
-			console.warn(`Cannot hit test with a render target that has a width or height of 0. Ensure you have set the render target's layout property to the bounds you wish to render.`, render_target.bounds.width, render_target.bounds.height);
+		if (renderTarget.bounds.width === 0 || renderTarget.bounds.height === 0) {
+			console.warn(`Cannot hit test with a render target that has a width or height of 0. Ensure you have set the render target's layout property to the bounds you wish to render.`, renderTarget.bounds.width, renderTarget.bounds.height);
 			return null;
 		}
 
 		document.dispatchEvent(new ZHTMLRenderEventEnableColorPicking());
 
 		options.quad.render({
-			render_adapter: options.renderer.render_adapter,
+			renderAdapter: options.renderer.renderAdapter,
 			scene: options.scene,
 			camera: options.camera,
-			size: new THREE.Vector2(render_target.bounds.width, render_target.bounds.height),
+			size: new THREE.Vector2(renderTarget.bounds.width, renderTarget.bounds.height),
 		});
 		
 		document.dispatchEvent(new ZHTMLRenderEventDisableColorPicking());
 		
 		// Read the pixel color at the mouse position
-		const read = options.renderer.render_adapter.readPixelFromOffscreenTarget({
-			target: options.quad.offscreen_target,
-			window_x: options.window_x,
-			window_y: options.window_y,
-			bounds: render_target.bounds,
+		const read = options.renderer.renderAdapter.readPixelFromOffscreenTarget({
+			target: options.quad.offscreenTarget,
+			windowX: options.windowX,
+			windowY: options.windowY,
+			bounds: renderTarget.bounds,
 		});
 		
-		const pixel_test_color = ZHTMLShaderMaterial.ZHTML_PIXEL_TEST_COLOR;
-		const hit_pixel_test = read[0] === pixel_test_color.r && read[1] === pixel_test_color.g && read[2] === pixel_test_color.b;
-		if (!hit_pixel_test) {
+		const pixelTestColor = ZHTMLShaderMaterial.htmlPixelTestColor;
+		const hitPixelTest = read[0] === pixelTestColor.r && read[1] === pixelTestColor.g && read[2] === pixelTestColor.b;
+		if (!hitPixelTest) {
 			return null;
 		}
 
 		// If the pixel color is the test color, then the mouse is over an HTML element in the scene (and that part of the
 		// HTML element is not occluded by geometry in the scene)
 		return {
-			render_target: render_target,
+			renderTarget: renderTarget,
 		};
 
 	}
 
-	intersectRenderedObjects(options: { renderer: ZHTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget, window_x: number, window_y: number }): ZHTMLRaycastObjectsResult[] {
+	intersectRenderedObjects(options: { renderer: ZHTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, renderTarget: ZHTMLRenderTarget, windowX: number, windowY: number }): ZHTMLRaycastObjectsResult[] {
 
-		const render_target = options.render_target;
+		const renderTarget = options.renderTarget;
 
-		if (render_target.bounds.width === 0 || render_target.bounds.height === 0) {
-			console.warn(`Cannot hit test with a render target that has a width or height of 0. Ensure you have set the render target's layout property to the bounds you wish to render.`, render_target.bounds.width, render_target.bounds.height);
+		if (renderTarget.bounds.width === 0 || renderTarget.bounds.height === 0) {
+			console.warn(`Cannot hit test with a render target that has a width or height of 0. Ensure you have set the render target's layout property to the bounds you wish to render.`, renderTarget.bounds.width, renderTarget.bounds.height);
 			return [];
 		}
 
 		const objects = options.renderer.getRenderedObjects();
 		const raycast = new THREE.Raycaster();
-		const mouse_coordinates_in_window = new THREE.Vector2(options.window_x, options.window_y);
-		const mouse_coordinates_in_scene = new THREE.Vector2(mouse_coordinates_in_window.x - render_target.bounds.left, mouse_coordinates_in_window.y - render_target.bounds.top);
-		const mouse_coordinates_ndc = new THREE.Vector2(
-			(mouse_coordinates_in_scene.x / render_target.bounds.width) * 2 - 1,
-			(mouse_coordinates_in_scene.y / render_target.bounds.height) * -2 + 1
+		const mouseCoordinatesInWindow = new THREE.Vector2(options.windowX, options.windowY);
+		const mouseCoordinatesInScene = new THREE.Vector2(mouseCoordinatesInWindow.x - renderTarget.bounds.left, mouseCoordinatesInWindow.y - renderTarget.bounds.top);
+		const mouseCoordinatesNdc = new THREE.Vector2(
+			(mouseCoordinatesInScene.x / renderTarget.bounds.width) * 2 - 1,
+			(mouseCoordinatesInScene.y / renderTarget.bounds.height) * -2 + 1
 		);
-		raycast.setFromCamera(mouse_coordinates_ndc, options.camera);
+		raycast.setFromCamera(mouseCoordinatesNdc, options.camera);
 		const intersections = raycast.intersectObjects(objects, true);
 		
 		if (intersections.length === 0) {
@@ -79,19 +79,19 @@ export class ZHTMLRaycast {
 		}
 
 		const results: ZHTMLRaycastObjectsResult[] = intersections.map((intersection) => {
-			let html_object: ZHTMLObject3D | null = null;
+			let htmlObject: ZHTMLObject3D | null = null;
 			intersection.object.traverseAncestors((ancestor) => {
 				if (ancestor instanceof ZHTMLObject3D) {
-					html_object = ancestor;
+					htmlObject = ancestor;
 					return;
 				}
 			});
-			const html_element = html_object ? render_target.getElementForObject(html_object) : null;
+			const htmlElement = htmlObject ? renderTarget.getElementForObject(htmlObject) : null;
 			return {
-				html: html_object !== null && html_element !== null ? {
-					object: html_object,
-					element: html_element,
-					render_target: render_target,
+				html: htmlObject !== null && htmlElement !== null ? {
+					object: htmlObject,
+					element: htmlElement,
+					renderTarget: renderTarget,
 				} : null,
 				intersection: intersection,
 			};

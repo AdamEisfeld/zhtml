@@ -3,30 +3,30 @@ import { FileShaderMaterial, FileShaderMaterialParameters } from './FileShaderMa
 import { ZHTMLRenderEventEnableColorPicking } from '../events/ZHTMLRenderEventEnableColorPicking';
 import { ZHTMLRenderEventDisableColorPicking } from '../events/ZHTMLRenderEventDisableColorPicking';
 
-import begin_html from './begin_html.glsl';
+import beginHtml from './beginHtml.glsl';
 
 export const ZHTMLShaderChunk: Record<string, string> = {
-	begin_html: begin_html,
+	beginHtml: beginHtml,
 };
 
 export class ZHTMLShaderMaterial extends FileShaderMaterial {
 
-	static readonly ZHTML_PIXEL_TEST_COLOR = new THREE.Color(1.0, 0.5, 1.0);
+	static readonly htmlPixelTestColor = new THREE.Color(1.0, 0.5, 1.0);
 
-	set html_pixel_test_enabled(value: boolean) {
-		this.uniforms.html_pixel_test_enabled.value = value ? 1 : 0;
+	set htmlPixelTestEnabled(value: boolean) {
+		this.uniforms.htmlPixelTestEnabled.value = value ? 1 : 0;
 	}
 
-	get html_pixel_test_enabled(): boolean {
-		return this.uniforms.html_pixel_test_enabled.value === 1;
+	get htmlPixelTestEnabled(): boolean {
+		return this.uniforms.htmlPixelTestEnabled.value === 1;
 	}
 	
-	set html_pixel_test_color(value: THREE.Color) {
-		this.uniforms.html_pixel_test_color.value = value;
+	set htmlPixelTestColor(value: THREE.Color) {
+		this.uniforms.htmlPixelTestColor.value = value;
 	}
 
-	get html_pixel_test_color(): THREE.Color {
-		return this.uniforms.html_pixel_test_color.value;
+	get htmlPixelTestColor(): THREE.Color {
+		return this.uniforms.htmlPixelTestColor.value;
 	}
 
 	private _onEnableColorPickingBind: (event: ZHTMLRenderEventEnableColorPicking) => void;
@@ -34,43 +34,43 @@ export class ZHTMLShaderMaterial extends FileShaderMaterial {
 
 	constructor(parameters?: FileShaderMaterialParameters) {
 
-		const mutable_parameters = parameters || {};
+		const mutableParameters = parameters || {};
 
 		// Inject required file chunks that users can reference in their HTML material subclasses
-		const mutable_file_chunks = mutable_parameters.file_chunks || [];
-		mutable_file_chunks.push(ZHTMLShaderChunk);
-		mutable_parameters.file_chunks = mutable_file_chunks;
+		const mutableFileChunks = mutableParameters.fileChunks || [];
+		mutableFileChunks.push(ZHTMLShaderChunk);
+		mutableParameters.fileChunks = mutableFileChunks;
 
 		// Inject required uniforms for HTML rendering
-		const mutable_uniforms = mutable_parameters.uniforms || {};
-		mutable_uniforms.html_pixel_test_enabled = { value: 0 };
-		mutable_uniforms.html_pixel_test_color = { value: ZHTMLShaderMaterial.ZHTML_PIXEL_TEST_COLOR };
-		mutable_parameters.uniforms = mutable_uniforms;
+		const mutableUniforms = mutableParameters.uniforms || {};
+		mutableUniforms.htmlPixelTestEnabled = { value: 0 };
+		mutableUniforms.htmlPixelTestColor = { value: ZHTMLShaderMaterial.htmlPixelTestColor };
+		mutableParameters.uniforms = mutableUniforms;
 		
-		super(mutable_parameters);
+		super(mutableParameters);
 
 		// Bind ZHTMLRenderEventEnableColorPicking to onEnableColorPicking
 		this._onEnableColorPickingBind = this.onEnableColorPicking.bind(this);
-		document.addEventListener(ZHTMLRenderEventEnableColorPicking.event_name, this._onEnableColorPickingBind);
+		document.addEventListener(ZHTMLRenderEventEnableColorPicking.eventName, this._onEnableColorPickingBind);
 		
 		// Bind ZHTMLRenderEventDisableColorPicking to onDisableColorPicking
 		this._onDisableColorPickingBind = this.onDisableColorPicking.bind(this);
-		document.addEventListener(ZHTMLRenderEventDisableColorPicking.event_name, this._onDisableColorPickingBind);
+		document.addEventListener(ZHTMLRenderEventDisableColorPicking.eventName, this._onDisableColorPickingBind);
 
 	}
 
 	private onEnableColorPicking(): void {
-		this.html_pixel_test_enabled = true;
+		this.htmlPixelTestEnabled = true;
 	}
 
 	private onDisableColorPicking(): void {
-		this.html_pixel_test_enabled = false;
+		this.htmlPixelTestEnabled = false;
 	}
 
 	dispose(): void {
 		super.dispose();
-		document.removeEventListener(ZHTMLRenderEventEnableColorPicking.event_name, this.onEnableColorPicking);
-		document.removeEventListener(ZHTMLRenderEventDisableColorPicking.event_name, this.onDisableColorPicking);
+		document.removeEventListener(ZHTMLRenderEventEnableColorPicking.eventName, this._onEnableColorPickingBind);
+		document.removeEventListener(ZHTMLRenderEventDisableColorPicking.eventName, this._onDisableColorPickingBind);
 	}
 
 }

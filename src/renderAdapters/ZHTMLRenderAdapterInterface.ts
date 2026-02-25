@@ -18,7 +18,7 @@ export interface ZHTMLRenderAdapterInterface {
 
 	renderOffscreenTarget(options: { target: ZHTMLRenderAdapterOffscreenTargetInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void;
 
-	readPixelFromOffscreenTarget(options: { target: ZHTMLRenderAdapterOffscreenTargetInterface, window_x: number, window_y: number, bounds: DOMRectReadOnly }): Float32Array;
+	readPixelFromOffscreenTarget(options: { target: ZHTMLRenderAdapterOffscreenTargetInterface, windowX: number, windowY: number, bounds: DOMRectReadOnly }): Float32Array;
 
 	isRenderer(renderer: THREE.Renderer): boolean;
 

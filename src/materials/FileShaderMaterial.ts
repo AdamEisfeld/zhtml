@@ -1,32 +1,32 @@
 import * as THREE from 'three';
 
 export type FileShaderMaterialParameters = {
-	file_chunks?: Record<string, string>[],
+	fileChunks?: Record<string, string>[],
 } & THREE.ShaderMaterialParameters;
 
 export class FileShaderMaterial extends THREE.ShaderMaterial {
 
 	constructor(parameters?: FileShaderMaterialParameters) {
 
-		const mutable_parameters = parameters || {};
+		const mutableParameters = parameters || {};
 
 		// Replace includes with known scripts
-		if (parameters?.file_chunks) {
-			for (let f = 0; f < parameters.file_chunks.length; f++) {
-				const file_chunk = parameters.file_chunks[f];
-				const include_names = Object.keys(file_chunk);
-				for (let i = 0, l = include_names.length; i < l; i += 1) {
-					const include_name = include_names[i];
-					const include_value = file_chunk[include_name];
-					mutable_parameters.fragmentShader = mutable_parameters.fragmentShader?.replace(`#include <${include_name}>`, include_value);
-					mutable_parameters.vertexShader = mutable_parameters.vertexShader?.replace(`#include <${include_name}>`, include_value);
+		if (parameters?.fileChunks) {
+			for (let f = 0; f < parameters.fileChunks.length; f++) {
+				const fileChunk = parameters.fileChunks[f];
+				const includeNames = Object.keys(fileChunk);
+				for (let i = 0, l = includeNames.length; i < l; i += 1) {
+					const includeName = includeNames[i];
+					const includeValue = fileChunk[includeName];
+					mutableParameters.fragmentShader = mutableParameters.fragmentShader?.replace(`#include <${includeName}>`, includeValue);
+					mutableParameters.vertexShader = mutableParameters.vertexShader?.replace(`#include <${includeName}>`, includeValue);
 				}
 			}
 		}
 
-		delete mutable_parameters.file_chunks;
+		delete mutableParameters.fileChunks;
 
-		super(mutable_parameters);
+		super(mutableParameters);
 
 	}
 

@@ -10,10 +10,10 @@ export class ZHTMLRenderEventWillRender extends Event {
 	public readonly object: unknown;
 	public readonly renderer: THREE.Renderer;
 
-	public static readonly event_name = 'ZHTMLRenderEventWillRender';
+	public static readonly eventName = 'ZHTMLRenderEventWillRender';
 
 	constructor(options: { object: unknown, renderer: THREE.Renderer }) {
-		super(ZHTMLRenderEventWillRender.event_name);
+		super(ZHTMLRenderEventWillRender.eventName);
 		this.object = options.object;
 		this.renderer = options.renderer;
 	}

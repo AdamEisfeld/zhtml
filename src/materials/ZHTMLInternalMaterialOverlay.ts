@@ -6,7 +6,7 @@ import { ZHTMLShaderMaterial } from './ZHTMLShaderMaterial';
  * We use this material internally to detect if a given pixel belongs to an overlay object or not, which can be used to determine
  * if the mouse is over an HTML element in order to enable pointer events with that element's parent container.
  * 
- * The show_fill uniform is used to toggle whether or not the material is actually rendered with color. We toggle it on when
+ * The showFill uniform is used to toggle whether or not the material is actually rendered with color. We toggle it on when
  * doing an off-screen pass, then we toggle it back off before rendering the scene to the screen.
  */
 export class ZHTMLInternalMaterialOverlay extends ZHTMLShaderMaterial {
@@ -23,14 +23,14 @@ export class ZHTMLInternalMaterialOverlay extends ZHTMLShaderMaterial {
 			}`,
 			fragmentShader: /* glsl */`
 			
-			#include <begin_html>
+			#include <beginHtml>
 			
 			void main() {
 
 				#ifdef USE_HTML
 
-					if (html_pixel_test_enabled > 0) {
-						gl_FragColor = vec4(html_pixel_test_color.rgb, 1);
+					if (htmlPixelTestEnabled > 0) {
+						gl_FragColor = vec4(htmlPixelTestColor.rgb, 1);
 						return;
 					}
 

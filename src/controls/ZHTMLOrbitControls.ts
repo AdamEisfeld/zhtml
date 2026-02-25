@@ -135,29 +135,29 @@ export class ZHTMLOrbitControls {
 		this.object = object;
 	}
 
-	private bind_onContextMenu = this.onContextMenu.bind(this);
-	private bind_onMouseDown = this.onMouseDown.bind(this);
-	private bind_onMouseMove = this.onMouseMove.bind(this);
-	private bind_onMouseUp = this.onMouseUp.bind(this);
-	private bind_onMouseWheel = this.onMouseWheel.bind(this);
-	private bind_onTouchStart = this.onTouchStart.bind(this);
-	private bind_onTouchEnd = this.onTouchEnd.bind(this);
-	private bind_onTouchMove = this.onTouchMove.bind(this);
-	private bind_onKeyDown = this.onKeyDown.bind(this);
+	private bindOnContextMenu = this.onContextMenu.bind(this);
+	private bindOnMouseDown = this.onMouseDown.bind(this);
+	private bindOnMouseMove = this.onMouseMove.bind(this);
+	private bindOnMouseUp = this.onMouseUp.bind(this);
+	private bindOnMouseWheel = this.onMouseWheel.bind(this);
+	private bindOnTouchStart = this.onTouchStart.bind(this);
+	private bindOnTouchEnd = this.onTouchEnd.bind(this);
+	private bindOnTouchMove = this.onTouchMove.bind(this);
+	private bindOnKeyDown = this.onKeyDown.bind(this);
 
 	public attach(element: HTMLElement) {
 		if (this.domElement) {
 			this.detach();
 		}
-		element.addEventListener( 'contextmenu', this.bind_onContextMenu, false );
-		element.addEventListener( 'mousedown', this.bind_onMouseDown, false );
-		element.addEventListener( 'wheel', this.bind_onMouseWheel, false );
-		element.addEventListener( 'touchstart', this.bind_onTouchStart, false );
-		element.addEventListener( 'touchend', this.bind_onTouchEnd, false );
-		element.addEventListener( 'touchmove', this.bind_onTouchMove, false );
-		document.addEventListener( 'mousemove', this.bind_onMouseMove, false );
-		document.addEventListener( 'mouseup', this.bind_onMouseUp, false );
-		window.addEventListener( 'keydown', this.bind_onKeyDown, false );
+		element.addEventListener( 'contextmenu', this.bindOnContextMenu, false );
+		element.addEventListener( 'mousedown', this.bindOnMouseDown, false );
+		element.addEventListener( 'wheel', this.bindOnMouseWheel, false );
+		element.addEventListener( 'touchstart', this.bindOnTouchStart, false );
+		element.addEventListener( 'touchend', this.bindOnTouchEnd, false );
+		element.addEventListener( 'touchmove', this.bindOnTouchMove, false );
+		document.addEventListener( 'mousemove', this.bindOnMouseMove, false );
+		document.addEventListener( 'mouseup', this.bindOnMouseUp, false );
+		window.addEventListener( 'keydown', this.bindOnKeyDown, false );
 		this.domElement = element;
 	}
 
@@ -165,15 +165,15 @@ export class ZHTMLOrbitControls {
 		if (!this.domElement) {
 			return;
 		}
-		this.domElement.removeEventListener( 'contextmenu', this.bind_onContextMenu, false );
-		this.domElement.removeEventListener( 'mousedown', this.bind_onMouseDown as EventListenerOrEventListenerObject, false );
-		this.domElement.removeEventListener( 'wheel', this.bind_onMouseWheel as EventListenerOrEventListenerObject, false );
-		this.domElement.removeEventListener( 'touchstart', this.bind_onTouchStart as EventListenerOrEventListenerObject, false );
-		this.domElement.removeEventListener( 'touchend', this.bind_onTouchEnd as EventListenerOrEventListenerObject, false );
-		this.domElement.removeEventListener( 'touchmove', this.bind_onTouchMove as EventListenerOrEventListenerObject, false );
-		document.removeEventListener( 'mousemove', this.bind_onMouseMove, false );
-		document.removeEventListener( 'mouseup', this.bind_onMouseUp, false );
-		window.removeEventListener( 'keydown', this.bind_onKeyDown, false );
+		this.domElement.removeEventListener( 'contextmenu', this.bindOnContextMenu, false );
+		this.domElement.removeEventListener( 'mousedown', this.bindOnMouseDown as EventListenerOrEventListenerObject, false );
+		this.domElement.removeEventListener( 'wheel', this.bindOnMouseWheel as EventListenerOrEventListenerObject, false );
+		this.domElement.removeEventListener( 'touchstart', this.bindOnTouchStart as EventListenerOrEventListenerObject, false );
+		this.domElement.removeEventListener( 'touchend', this.bindOnTouchEnd as EventListenerOrEventListenerObject, false );
+		this.domElement.removeEventListener( 'touchmove', this.bindOnTouchMove as EventListenerOrEventListenerObject, false );
+		document.removeEventListener( 'mousemove', this.bindOnMouseMove, false );
+		document.removeEventListener( 'mouseup', this.bindOnMouseUp, false );
+		window.removeEventListener( 'keydown', this.bindOnKeyDown, false );
 		this.domElement = null;
 	}
 

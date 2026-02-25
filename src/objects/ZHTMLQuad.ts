@@ -1,50 +1,50 @@
 import * as THREE from 'three';
-import { ZHTMLRenderAdapterInterface, ZHTMLRenderAdapterOffscreenTargetInterface } from '../render_adapters/ZHTMLRenderAdapterInterface';
+import { ZHTMLRenderAdapterInterface, ZHTMLRenderAdapterOffscreenTargetInterface } from '../renderAdapters/ZHTMLRenderAdapterInterface';
 
 export class ZHTMLQuad extends THREE.Mesh {
 
-	public readonly quad_material: THREE.MeshBasicMaterial;
-	public readonly quad_geometry: THREE.PlaneGeometry;
-	public readonly offscreen_target: ZHTMLRenderAdapterOffscreenTargetInterface;
+	public readonly quadMaterial: THREE.MeshBasicMaterial;
+	public readonly quadGeometry: THREE.PlaneGeometry;
+	public readonly offscreenTarget: ZHTMLRenderAdapterOffscreenTargetInterface;
 
-	public constructor(options: { render_adapter: ZHTMLRenderAdapterInterface }) {
+	public constructor(options: { renderAdapter: ZHTMLRenderAdapterInterface }) {
 
-		const offscreen_target = options.render_adapter.createOffscreenTarget({
+		const offscreenTarget = options.renderAdapter.createOffscreenTarget({
 			width: 1,
 			height: 1,
 		});
-		const quad_material = new THREE.MeshBasicMaterial({
-			map: offscreen_target.texture,
+		const quadMaterial = new THREE.MeshBasicMaterial({
+			map: offscreenTarget.texture,
 			transparent: true,
 		});
-		const quad_geometry = new THREE.PlaneGeometry(1, 1);
+		const quadGeometry = new THREE.PlaneGeometry(1, 1);
 
-		super(quad_geometry, quad_material);
+		super(quadGeometry, quadMaterial);
 
-		this.quad_material = quad_material;
-		this.quad_geometry = quad_geometry;
-		this.offscreen_target = offscreen_target;
+		this.quadMaterial = quadMaterial;
+		this.quadGeometry = quadGeometry;
+		this.offscreenTarget = offscreenTarget;
 
 	}
 
-	public render(options: { render_adapter: ZHTMLRenderAdapterInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void {
+	public render(options: { renderAdapter: ZHTMLRenderAdapterInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void {
 		this.visible = false;
-		this.quad_material.visible = false;
-		options.render_adapter.renderOffscreenTarget({
-			target: this.offscreen_target,
+		this.quadMaterial.visible = false;
+		options.renderAdapter.renderOffscreenTarget({
+			target: this.offscreenTarget,
 			scene: options.scene,
 			camera: options.camera,
 			size: options.size,
 		});
 		this.visible = true;
-		this.quad_material.visible = true;
+		this.quadMaterial.visible = true;
 	}
 
-	public readPixelColor(options: { render_adapter: ZHTMLRenderAdapterInterface, window_x: number, window_y: number, bounds: DOMRectReadOnly }): Float32Array {
-		return options.render_adapter.readPixelFromOffscreenTarget({
-			target: this.offscreen_target,
-			window_x: options.window_x,
-			window_y: options.window_y,
+	public readPixelColor(options: { renderAdapter: ZHTMLRenderAdapterInterface, windowX: number, windowY: number, bounds: DOMRectReadOnly }): Float32Array {
+		return options.renderAdapter.readPixelFromOffscreenTarget({
+			target: this.offscreenTarget,
+			windowX: options.windowX,
+			windowY: options.windowY,
 			bounds: options.bounds,
 		});
 	}

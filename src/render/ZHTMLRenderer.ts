@@ -3,36 +3,36 @@ import { ZHTMLCameraInterface } from '../cameras/ZHTMLCameraInterface';
 import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
 import { ZHTMLRenderEventWillRender } from '../events/ZHTMLRenderEventWillRender';
 import { ZHTMLRenderEventCanvasResized } from '../events/ZHTMLRenderEventCanvasResized';
-import { ZHTMLRenderAdapterInterface } from '../render_adapters/ZHTMLRenderAdapterInterface';
+import { ZHTMLRenderAdapterInterface } from '../renderAdapters/ZHTMLRenderAdapterInterface';
 import { ZHTMLRenderTarget } from './ZHTMLRenderTarget';
 
 export class ZHTMLRenderer {
 
-	private _render_adapter: ZHTMLRenderAdapterInterface;
-	private _render_target_uuids_to_rendered_objects_this_frame: Record<string, Record<string, ZHTMLObject3D>> = {};
-	private _render_target_uuids_to_rendered_objects_last_frame: Record<string, Record<string, ZHTMLObject3D>> = {};
-	private _render_target_uuids_to_camera_transform_ids: Record<string, number> = {};
-	private _render_target_uuids_to_object_transform_ids: Record<string, Record<string, number>> = {};
-	private _current_render_target: ZHTMLRenderTarget | null = null;
-	private _canvas_resize_observer: ResizeObserver | null = null;
-	private _canvas_bounds: DOMRectReadOnly = new DOMRectReadOnly();
-	private _canvas_resize_id: number = 1;
+	private _renderAdapter: ZHTMLRenderAdapterInterface;
+	private _renderTargetUuidsToRenderedObjectsThisFrame: Record<string, Record<string, ZHTMLObject3D>> = {};
+	private _renderTargetUuidsToRenderedObjectsLastFrame: Record<string, Record<string, ZHTMLObject3D>> = {};
+	private _renderTargetUuidsToCameraTransformIds: Record<string, number> = {};
+	private _renderTargetUuidsToObjectTransformIds: Record<string, Record<string, number>> = {};
+	private _currentRenderTarget: ZHTMLRenderTarget | null = null;
+	private _canvasResizeObserver: ResizeObserver | null = null;
+	private _canvasBounds: DOMRectReadOnly = new DOMRectReadOnly();
+	private _canvasResizeId: number = 1;
 	private _element: HTMLElement;
 	public get element(): HTMLElement {
 		return this._element;
 	}
-	public html_renderer_uuid: string = THREE.MathUtils.generateUUID();
-	public get render_adapter(): ZHTMLRenderAdapterInterface {
-		return this._render_adapter;
+	public htmlRendererUuid: string = THREE.MathUtils.generateUUID();
+	public get renderAdapter(): ZHTMLRenderAdapterInterface {
+		return this._renderAdapter;
 	}
 
-	public get canvas_bounds(): DOMRectReadOnly {
-		return this._canvas_bounds;
+	public get canvasBounds(): DOMRectReadOnly {
+		return this._canvasBounds;
 	}
 
-	constructor(options: { render_adapter: ZHTMLRenderAdapterInterface, element?: HTMLElement }) {
+	constructor(options: { renderAdapter: ZHTMLRenderAdapterInterface, element?: HTMLElement }) {
 
-		this._render_adapter = options.render_adapter;
+		this._renderAdapter = options.renderAdapter;
 		if (!options.element) {
 			this._element = document.createElement('div');
 			this.element.style.setProperty('position', 'absolute');
@@ -44,23 +44,23 @@ export class ZHTMLRenderer {
 		} else {
 			this._element = options.element;
 		}
-		this._render_adapter.domElement.style.position = 'absolute';
-		this._render_adapter.domElement.style.top = '0px';
-		this._render_adapter.domElement.style.left = '0px';
-		this._render_adapter.domElement.style.width = '100%';
-		this._render_adapter.domElement.style.height = '100%';
-		this._element.appendChild(this._render_adapter.domElement);
-		this._canvas_resize_observer = new ResizeObserver(() => {
-			this._canvas_bounds = this._element.getBoundingClientRect();
-			this._canvas_resize_id *= -1;
+		this._renderAdapter.domElement.style.position = 'absolute';
+		this._renderAdapter.domElement.style.top = '0px';
+		this._renderAdapter.domElement.style.left = '0px';
+		this._renderAdapter.domElement.style.width = '100%';
+		this._renderAdapter.domElement.style.height = '100%';
+		this._element.appendChild(this._renderAdapter.domElement);
+		this._canvasResizeObserver = new ResizeObserver(() => {
+			this._canvasBounds = this._element.getBoundingClientRect();
+			this._canvasResizeId *= -1;
 			document.dispatchEvent(new ZHTMLRenderEventCanvasResized({
 				element: this._element,
-				bounds: this._canvas_bounds,
+				bounds: this._canvasBounds,
 			}));
 		});
-		this._canvas_resize_observer.observe(this._element);
+		this._canvasResizeObserver.observe(this._element);
 
-		document.addEventListener(ZHTMLRenderEventWillRender.event_name, (event: Event) => {
+		document.addEventListener(ZHTMLRenderEventWillRender.eventName, (event: Event) => {
 			
 			if (!(event instanceof ZHTMLRenderEventWillRender)) {
 				return;
@@ -70,51 +70,51 @@ export class ZHTMLRenderer {
 				return;
 			}
 
-			if (!this._current_render_target) {
+			if (!this._currentRenderTarget) {
 				return;
 			}
 
-			if (this._render_adapter.isRenderer(event.renderer) === false) {
+			if (this._renderAdapter.isRenderer(event.renderer) === false) {
 				return;
 			}
 			
 			// Store the object uuid for the camera that rendered it
-			const mutable_object_uuids = this._render_target_uuids_to_rendered_objects_this_frame[this._current_render_target.uuid] || {};
-			mutable_object_uuids[event.object.uuid] = event.object;
-			this._render_target_uuids_to_rendered_objects_this_frame[this._current_render_target.uuid] = mutable_object_uuids;
+			const mutableObjectUuids = this._renderTargetUuidsToRenderedObjectsThisFrame[this._currentRenderTarget.uuid] || {};
+			mutableObjectUuids[event.object.uuid] = event.object;
+			this._renderTargetUuidsToRenderedObjectsThisFrame[this._currentRenderTarget.uuid] = mutableObjectUuids;
 		
 		});
 
 	}
 
 	public getRenderedObjects(): ZHTMLObject3D[] {
-		const render_target_uuids = Object.keys(this._render_target_uuids_to_rendered_objects_this_frame);
-		const visible_objects: Record<string, ZHTMLObject3D> = {};
-		for (let i = 0, l = render_target_uuids.length; i < l; i += 1) {
-			const render_target_uuid = render_target_uuids[i];
-			const object_uuids = Object.keys(this._render_target_uuids_to_rendered_objects_this_frame[render_target_uuid]);
-			for (let j = 0, m = object_uuids.length; j < m; j += 1) {
-				const object_uuid = object_uuids[j];
-				const object = this._render_target_uuids_to_rendered_objects_this_frame[render_target_uuid][object_uuid];
-				visible_objects[object.uuid] = object;
+		const renderTargetUuids = Object.keys(this._renderTargetUuidsToRenderedObjectsThisFrame);
+		const visibleObjects: Record<string, ZHTMLObject3D> = {};
+		for (let i = 0, l = renderTargetUuids.length; i < l; i += 1) {
+			const renderTargetUuid = renderTargetUuids[i];
+			const objectUuids = Object.keys(this._renderTargetUuidsToRenderedObjectsThisFrame[renderTargetUuid]);
+			for (let j = 0, m = objectUuids.length; j < m; j += 1) {
+				const objectUuid = objectUuids[j];
+				const object = this._renderTargetUuidsToRenderedObjectsThisFrame[renderTargetUuid][objectUuid];
+				visibleObjects[object.uuid] = object;
 			}
 		}
-		return Object.values(visible_objects);
+		return Object.values(visibleObjects);
 	}
 
-	public render(options: { scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget }): void {
+	public render(options: { scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, renderTarget: ZHTMLRenderTarget }): void {
 		
-		const { scene, camera, render_target } = options;
+		const { scene, camera, renderTarget } = options;
 		
-		if (!render_target) {
+		if (!renderTarget) {
 			throw new Error('Cannot render without a render target');
 		}
 
-		this._current_render_target = render_target;
+		this._currentRenderTarget = renderTarget;
 
-		if (this._canvas_resize_id !== render_target.bounds_resize_id) {
-			render_target.calculateBounds({
-				resize_id: this._canvas_resize_id,
+		if (this._canvasResizeId !== renderTarget.boundsResizeId) {
+			renderTarget.calculateBounds({
+				resizeId: this._canvasResizeId,
 			});
 		}
 
@@ -122,64 +122,64 @@ export class ZHTMLRenderer {
 		// Inform the camera that it is about to render so it can prepare itself for the current bounds if needed
 		
 		camera.willRender({
-			bounds: render_target.bounds,
+			bounds: renderTarget.bounds,
 		});
 
 		// MARK: - Step 3
 		// Render the WebGL scene (ensuring the viewport matches the render target's bounds)
 
-		this.render_adapter.setSize(this._canvas_bounds.width, this._canvas_bounds.height);
-		this.render_adapter.render({
+		this.renderAdapter.setSize(this._canvasBounds.width, this._canvasBounds.height);
+		this.renderAdapter.render({
 			scene: scene,
 			camera: camera,
 			rectangle: {
-				x: render_target.bounds.left - this._canvas_bounds.left,
-				y: render_target.bounds.top - this._canvas_bounds.top,
-				width: render_target.bounds.width,
-				height: render_target.bounds.height,
+				x: renderTarget.bounds.left - this._canvasBounds.left,
+				y: renderTarget.bounds.top - this._canvasBounds.top,
+				width: renderTarget.bounds.width,
+				height: renderTarget.bounds.height,
 			}
 		});
 
 		// MARK: - Step 4
 		// Rebuild the camera's CSS transform if needed
-		if (camera.html_needs_layout === true) {
+		if (camera.htmlNeedsLayout === true) {
 			camera.htmlUpdateLayout({
-				bounds: render_target.bounds,
+				bounds: renderTarget.bounds,
 			});
-			camera.html_needs_layout = false;
+			camera.htmlNeedsLayout = false;
 		}
 
 		// MARK: - Step 5
 		// Apply the rebuilt CSS transform to the camera div if needed
-		if (this._render_target_uuids_to_camera_transform_ids[render_target.uuid] !== camera.html_transform_id) {
-			render_target.camera_element.style.setProperty('transform', camera.html_transform_style ?? '');
-			this._render_target_uuids_to_camera_transform_ids[render_target.uuid] = camera.html_transform_id;
+		if (this._renderTargetUuidsToCameraTransformIds[renderTarget.uuid] !== camera.htmlTransformId) {
+			renderTarget.cameraElement.style.setProperty('transform', camera.htmlTransformStyle ?? '');
+			this._renderTargetUuidsToCameraTransformIds[renderTarget.uuid] = camera.htmlTransformId;
 		}
 
 		// MARK: - Step 6
 		// Ensure any objects rendered by the camera this frame are visible and have updated transforms
-		const mutable_object_uuids_shown_this_frame: Record<string, ZHTMLObject3D> = {};
-		const mutable_render_target_uuids_to_object_uuids_shown_last_frame_not_this_frame: Record<string, ZHTMLObject3D> = this._render_target_uuids_to_rendered_objects_last_frame[render_target.uuid] ?? {};
-		const objects_to_show = this._render_target_uuids_to_rendered_objects_this_frame[render_target.uuid] ?? {};
-		const object_uuids_to_show = Object.keys(objects_to_show);
-		for (let i = 0, l = object_uuids_to_show.length; i < l; i += 1) {
+		const mutableObjectUuidsShownThisFrame: Record<string, ZHTMLObject3D> = {};
+		const mutableRenderTargetUuidsToObjectUuidsShownLastFrameNotThisFrame: Record<string, ZHTMLObject3D> = this._renderTargetUuidsToRenderedObjectsLastFrame[renderTarget.uuid] ?? {};
+		const objectsToShow = this._renderTargetUuidsToRenderedObjectsThisFrame[renderTarget.uuid] ?? {};
+		const objectUuidsToShow = Object.keys(objectsToShow);
+		for (let i = 0, l = objectUuidsToShow.length; i < l; i += 1) {
 
-			const uuid = object_uuids_to_show[i];
-			const object = objects_to_show[uuid];
+			const uuid = objectUuidsToShow[i];
+			const object = objectsToShow[uuid];
 			if (!object) {
 				throw new Error(`Cannot find object with uuid ${uuid}`);
 			}
 			
-			const element = render_target.getElementForObject(object);
+			const element = renderTarget.getElementForObject(object);
 			if (!element) {
 				console.warn('Cannot find element');
 				continue;
 			}
 
 			// Rebuild the object's CSS transform if needed
-			if (object.html_needs_layout === true) {
+			if (object.htmlNeedsLayout === true) {
 				object.htmlUpdateLayout();
-				object.html_needs_layout = false;
+				object.htmlNeedsLayout = false;
 			}
 
 			// Ensure the HTML element is visible
@@ -191,35 +191,35 @@ export class ZHTMLRenderer {
 			}
 
 			// Apply the object's CSS transform if needed
-			const object_transforms = this._render_target_uuids_to_object_transform_ids[render_target.uuid] ?? {};
-			if (object_transforms[uuid] !== object.html_transform_id) {
-				element.style.setProperty('transform', object.html_transform_style);
-				object_transforms[uuid] = object.html_transform_id;
-				this._render_target_uuids_to_object_transform_ids[render_target.uuid] = object_transforms;
+			const objectTransforms = this._renderTargetUuidsToObjectTransformIds[renderTarget.uuid] ?? {};
+			if (objectTransforms[uuid] !== object.htmlTransformId) {
+				element.style.setProperty('transform', object.htmlTransformStyle ?? '');
+				objectTransforms[uuid] = object.htmlTransformId;
+				this._renderTargetUuidsToObjectTransformIds[renderTarget.uuid] = objectTransforms;
 			}
 
-			mutable_object_uuids_shown_this_frame[uuid] = object;
-			delete mutable_render_target_uuids_to_object_uuids_shown_last_frame_not_this_frame[uuid];
+			mutableObjectUuidsShownThisFrame[uuid] = object;
+			delete mutableRenderTargetUuidsToObjectUuidsShownLastFrameNotThisFrame[uuid];
 
 		}
 
 		// MARK: - Step 7
 		// Store the object uuids shown this frame. We will use this to determine which objects we need to hide next frame, by comparing the object uuids we show next frame with the object uuids we showed last frame.
-		this._render_target_uuids_to_rendered_objects_last_frame[render_target.uuid] = mutable_object_uuids_shown_this_frame;
-		this._render_target_uuids_to_rendered_objects_this_frame[render_target.uuid] = {};
+		this._renderTargetUuidsToRenderedObjectsLastFrame[renderTarget.uuid] = mutableObjectUuidsShownThisFrame;
+		this._renderTargetUuidsToRenderedObjectsThisFrame[renderTarget.uuid] = {};
 
 		// MARK: - Step 8
 		// Hide any elements that were not rendered by this camera this frame
-		const objects_to_hide = mutable_render_target_uuids_to_object_uuids_shown_last_frame_not_this_frame;
-		const object_uuids_to_hide = Object.keys(objects_to_hide);
-		for (let i = 0, l = object_uuids_to_hide.length; i < l; i += 1) {
-			const uuid = object_uuids_to_hide[i];
-			const object = objects_to_hide[uuid];
+		const objectsToHide = mutableRenderTargetUuidsToObjectUuidsShownLastFrameNotThisFrame;
+		const objectUuidsToHide = Object.keys(objectsToHide);
+		for (let i = 0, l = objectUuidsToHide.length; i < l; i += 1) {
+			const uuid = objectUuidsToHide[i];
+			const object = objectsToHide[uuid];
 			if (!object) {
 				throw new Error(`Cannot find object with uuid ${uuid}`);
 			}
 
-			const element = render_target.getElementForObject(object);
+			const element = renderTarget.getElementForObject(object);
 			if (!element) {
 				console.warn('Cannot find element');
 				continue;
@@ -236,18 +236,18 @@ export class ZHTMLRenderer {
 
 		}
 
-		this._current_render_target = null;
+		this._currentRenderTarget = null;
 
 	}
 
 	public dispose(): void {
-		this.render_adapter.dispose();
-		this._render_target_uuids_to_camera_transform_ids = {};
-		this._render_target_uuids_to_object_transform_ids = {};
-		this._render_target_uuids_to_rendered_objects_this_frame = {};
-		this._render_target_uuids_to_rendered_objects_last_frame = {};
-		this._canvas_resize_observer?.disconnect();
-		this._canvas_resize_observer = null;
+		this.renderAdapter.dispose();
+		this._renderTargetUuidsToCameraTransformIds = {};
+		this._renderTargetUuidsToObjectTransformIds = {};
+		this._renderTargetUuidsToRenderedObjectsThisFrame = {};
+		this._renderTargetUuidsToRenderedObjectsLastFrame = {};
+		this._canvasResizeObserver?.disconnect();
+		this._canvasResizeObserver = null;
 	}
 
 }
