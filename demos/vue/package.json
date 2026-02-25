@@ -1,0 +1,13 @@
+{
+	"name": "zhtml-demos-vue",
+	"private": true,
+	"workspaces": ["persp", "ortho", "stereo"],
+	"scripts": {
+		"dev:persp": "npm run dev -w persp",
+		"dev:ortho": "npm run dev -w ortho",
+		"dev:stereo": "npm run dev -w stereo",
+		"build:persp": "npm run build -w persp",
+		"build:ortho": "npm run build -w ortho",
+		"build:stereo": "npm run build -w stereo"
+	}
+}
