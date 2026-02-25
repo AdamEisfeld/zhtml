@@ -1,18 +1,18 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { HTMLObject3D, HTMLMaterialPhong, HTMLGeometrySolverPlane } from 'zhtml';
+import { ZHTMLObject3D, ZHTMLMaterialPhong, ZHTMLGeometrySolverPlane } from 'zhtml';
 
 export class DemoLaptop extends THREE.Object3D {
-  html_object: HTMLObject3D;
-  html_effect_material: HTMLMaterialPhong;
+  html_object: ZHTMLObject3D;
+  html_effect_material: ZHTMLMaterialPhong;
 
   constructor() {
     super();
 
-    this.html_effect_material = new HTMLMaterialPhong();
+    this.html_effect_material = new ZHTMLMaterialPhong();
     this.html_effect_material.shininess = 30;
     this.html_effect_material.roughness = 0.5;
-    this.html_object = new HTMLObject3D({});
+    this.html_object = new ZHTMLObject3D({});
 
     let laptop_body: THREE.Object3D | undefined;
 
@@ -47,7 +47,7 @@ export class DemoLaptop extends THREE.Object3D {
       const laptop_screen_box = new THREE.Box3().setFromObject(gltf.scene);
       const laptop_screen_size = laptop_screen_box.getSize(new THREE.Vector3());
 
-      const geometry_solver = new HTMLGeometrySolverPlane({
+      const geometry_solver = new ZHTMLGeometrySolverPlane({
         object: this.html_object,
         config: {
           style: 'explicit',

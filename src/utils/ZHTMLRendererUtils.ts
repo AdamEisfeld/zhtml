@@ -1,13 +1,13 @@
-export type HTMLRenderMatrix = number[];
-export type HTMLRenderSize = { width: number, height: number };
-export type HTMLRenderFrustum = { top: number, left: number, right: number, bottom: number };
-export type HTMLRenderRect = { x: number, y: number, width: number, height: number };
+export type ZHTMLRenderMatrix = number[];
+export type ZHTMLRenderSize = { width: number, height: number };
+export type ZHTMLRenderFrustum = { top: number, left: number, right: number, bottom: number };
+export type ZHTMLRenderRect = { x: number, y: number, width: number, height: number };
 
 const _epsilon = (value: number): number => {
 	return Math.round(value * 1000) / 1000;
 };
 
-export function useGetCameraTransformStyle(options: { camera_projection_matrix: HTMLRenderMatrix, camera_matrix_world_inverse: HTMLRenderMatrix, render_size: HTMLRenderSize, frustum?: HTMLRenderFrustum | null, subrect?: HTMLRenderRect | null }): string {
+export function getCameraTransformStyle(options: { camera_projection_matrix: ZHTMLRenderMatrix, camera_matrix_world_inverse: ZHTMLRenderMatrix, render_size: ZHTMLRenderSize, frustum?: ZHTMLRenderFrustum | null, subrect?: ZHTMLRenderRect | null }): string {
 
 	const camera_transform_styles: string[] = [];
 
@@ -61,7 +61,7 @@ export function useGetCameraTransformStyle(options: { camera_projection_matrix: 
 
 }
 
-export function useGetElementTransformStyle(options: { elementMatrixWorld: HTMLRenderMatrix }): string {
+export function getElementTransformStyle(options: { elementMatrixWorld: ZHTMLRenderMatrix }): string {
 
 	// Shift the element so that subsequent transforms are relative to the center of the element, to match WebGL's coordinate system
 	// Apply the element's world matrix (flipping certain values to account for the difference between WebGL and CSS)
@@ -87,7 +87,7 @@ export function useGetElementTransformStyle(options: { elementMatrixWorld: HTMLR
 	
 }
 
-export function useBuildSceneContainer(): HTMLDivElement {
+export function buildSceneContainer(): HTMLDivElement {
 
 	const container = document.createElement('div');
 	container.style.position = 'absolute';
@@ -98,7 +98,7 @@ export function useBuildSceneContainer(): HTMLDivElement {
 
 }
 
-export function useBuildCameraContainer(): HTMLDivElement {
+export function buildCameraContainer(): HTMLDivElement {
 
 	const container = document.createElement('div');
 	container.style.position = 'absolute';

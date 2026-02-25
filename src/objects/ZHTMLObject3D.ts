@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { useGetElementTransformStyle } from '../utils/HTMLRendererUtils';
-import { HTMLRenderEventWillRender } from '../events/HTMLRenderEventWillRender';
+import { getElementTransformStyle } from '../utils/ZHTMLRendererUtils';
+import { ZHTMLRenderEventWillRender } from '../events/ZHTMLRenderEventWillRender';
 
 // Define your custom events
-interface HTMLObject3DEventMap {
+interface ZHTMLObject3DEventMap {
 	willCullElement: {
 		element: HTMLElement;
 	};
@@ -13,9 +13,9 @@ interface HTMLObject3DEventMap {
 }
 
 // Merge the custom events with THREE's event map
-type HTMLObject3DExtendedEventMap = THREE.Object3DEventMap & HTMLObject3DEventMap;
+type ZHTMLObject3DExtendedEventMap = THREE.Object3DEventMap & ZHTMLObject3DEventMap;
 
-export class HTMLObject3D extends THREE.Object3D {
+export class ZHTMLObject3D extends THREE.Object3D {
 
 
 
@@ -66,7 +66,7 @@ export class HTMLObject3D extends THREE.Object3D {
 
 		value.onBeforeRender = (renderer: THREE.Renderer) => {
 
-			const event = new HTMLRenderEventWillRender({
+			const event = new ZHTMLRenderEventWillRender({
 				object: this,
 				renderer: renderer,
 			});
@@ -126,15 +126,15 @@ export class HTMLObject3D extends THREE.Object3D {
 	// MARK: - Custom Event Overrides
 
 	// Override the dispatchEvent method
-	public dispatchEvent<T extends keyof HTMLObject3DExtendedEventMap>(event: THREE.BaseEvent<T> & HTMLObject3DExtendedEventMap[T]): void {
+	public dispatchEvent<T extends keyof ZHTMLObject3DExtendedEventMap>(event: THREE.BaseEvent<T> & ZHTMLObject3DExtendedEventMap[T]): void {
 		super.dispatchEvent(event as unknown as THREE.BaseEvent<keyof THREE.Object3DEventMap> & THREE.Object3DEventMap[keyof THREE.Object3DEventMap]);
 	}
 
-	public addEventListener<T extends keyof HTMLObject3DExtendedEventMap>(type: T, listener: (event: HTMLObject3DExtendedEventMap[T]) => void): void {
+	public addEventListener<T extends keyof ZHTMLObject3DExtendedEventMap>(type: T, listener: (event: ZHTMLObject3DExtendedEventMap[T]) => void): void {
 		super.addEventListener(type as keyof THREE.Object3DEventMap, listener as (event: THREE.Object3DEventMap[keyof THREE.Object3DEventMap]) => void);
 	}
 	
-	public removeEventListener<T extends keyof HTMLObject3DExtendedEventMap>(type: T, listener: (event: HTMLObject3DExtendedEventMap[T]) => void): void {
+	public removeEventListener<T extends keyof ZHTMLObject3DExtendedEventMap>(type: T, listener: (event: ZHTMLObject3DExtendedEventMap[T]) => void): void {
 		super.removeEventListener(type as keyof THREE.Object3DEventMap, listener as (event: THREE.Object3DEventMap[keyof THREE.Object3DEventMap]) => void);
 	}
 
@@ -172,7 +172,7 @@ export class HTMLObject3D extends THREE.Object3D {
 	 * Rebuilds the CSS transform style for the HTML element(s) tied to this object.
 	 */
 	public htmlUpdateLayout() {
-		this._html_transform_style = useGetElementTransformStyle({
+		this._html_transform_style = getElementTransformStyle({
 			elementMatrixWorld: this.matrixWorld.elements,
 		});
 		this._html_transform_id *= -1;

@@ -1,18 +1,18 @@
 import * as THREE from 'three';
-import { HTMLCameraInterface } from '../cameras/HTMLCameraInterface';
-import { HTMLRenderer } from '../render/HTMLRenderer';
-import { HTMLRaycastPixelsResult } from './HTMLRaycastPixelsResult';
-import { HTMLRaycastObjectsResult } from './HTMLRaycastObjectsResult';
-import { HTMLQuad } from '../objects/HTMLQuad';
-import { HTMLObject3D } from '../objects/HTMLObject3D';
-import { HTMLRenderTarget } from '../render/HTMLRenderTarget';
-import { HTMLRenderEventEnableColorPicking } from '../events/HTMLRenderEventEnableColorPicking';
-import { HTMLRenderEventDisableColorPicking } from '../events/HTMLRenderEventDisableColorPicking';
-import { HTMLShaderMaterial } from '../materials/HTMLShaderMaterial';
+import { ZHTMLCameraInterface } from '../cameras/ZHTMLCameraInterface';
+import { ZHTMLRenderer } from '../render/ZHTMLRenderer';
+import { ZHTMLRaycastPixelsResult } from './ZHTMLRaycastPixelsResult';
+import { ZHTMLRaycastObjectsResult } from './ZHTMLRaycastObjectsResult';
+import { ZHTMLQuad } from '../objects/ZHTMLQuad';
+import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
+import { ZHTMLRenderTarget } from '../render/ZHTMLRenderTarget';
+import { ZHTMLRenderEventEnableColorPicking } from '../events/ZHTMLRenderEventEnableColorPicking';
+import { ZHTMLRenderEventDisableColorPicking } from '../events/ZHTMLRenderEventDisableColorPicking';
+import { ZHTMLShaderMaterial } from '../materials/ZHTMLShaderMaterial';
 
-export class HTMLRaycast {
+export class ZHTMLRaycast {
 
-	intersectRenderedPixels(options: { quad: HTMLQuad, renderer: HTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & HTMLCameraInterface, render_target: HTMLRenderTarget, window_x: number, window_y: number }): HTMLRaycastPixelsResult | null {
+	intersectRenderedPixels(options: { quad: ZHTMLQuad, renderer: ZHTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget, window_x: number, window_y: number }): ZHTMLRaycastPixelsResult | null {
 
 		const render_target = options.render_target;
 
@@ -21,7 +21,7 @@ export class HTMLRaycast {
 			return null;
 		}
 
-		document.dispatchEvent(new HTMLRenderEventEnableColorPicking());
+		document.dispatchEvent(new ZHTMLRenderEventEnableColorPicking());
 
 		options.quad.render({
 			render_adapter: options.renderer.render_adapter,
@@ -30,7 +30,7 @@ export class HTMLRaycast {
 			size: new THREE.Vector2(render_target.bounds.width, render_target.bounds.height),
 		});
 		
-		document.dispatchEvent(new HTMLRenderEventDisableColorPicking());
+		document.dispatchEvent(new ZHTMLRenderEventDisableColorPicking());
 		
 		// Read the pixel color at the mouse position
 		const read = options.renderer.render_adapter.readPixelFromOffscreenTarget({
@@ -40,7 +40,7 @@ export class HTMLRaycast {
 			bounds: render_target.bounds,
 		});
 		
-		const pixel_test_color = HTMLShaderMaterial.HTML_PIXEL_TEST_COLOR;
+		const pixel_test_color = ZHTMLShaderMaterial.ZHTML_PIXEL_TEST_COLOR;
 		const hit_pixel_test = read[0] === pixel_test_color.r && read[1] === pixel_test_color.g && read[2] === pixel_test_color.b;
 		if (!hit_pixel_test) {
 			return null;
@@ -54,7 +54,7 @@ export class HTMLRaycast {
 
 	}
 
-	intersectRenderedObjects(options: { renderer: HTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & HTMLCameraInterface, render_target: HTMLRenderTarget, window_x: number, window_y: number }): HTMLRaycastObjectsResult[] {
+	intersectRenderedObjects(options: { renderer: ZHTMLRenderer, scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget, window_x: number, window_y: number }): ZHTMLRaycastObjectsResult[] {
 
 		const render_target = options.render_target;
 
@@ -78,10 +78,10 @@ export class HTMLRaycast {
 			return [];
 		}
 
-		const results: HTMLRaycastObjectsResult[] = intersections.map((intersection) => {
-			let html_object: HTMLObject3D | null = null;
+		const results: ZHTMLRaycastObjectsResult[] = intersections.map((intersection) => {
+			let html_object: ZHTMLObject3D | null = null;
 			intersection.object.traverseAncestors((ancestor) => {
-				if (ancestor instanceof HTMLObject3D) {
+				if (ancestor instanceof ZHTMLObject3D) {
 					html_object = ancestor;
 					return;
 				}

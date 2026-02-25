@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 /**
- * Interface for cameras that can be used with HTMLRenderer.
+ * Interface for cameras that can be used with ZHTMLRenderer.
  */
-export interface HTMLCameraInterface {
+export interface ZHTMLCameraInterface {
 
 	// MARK: - Properties
 

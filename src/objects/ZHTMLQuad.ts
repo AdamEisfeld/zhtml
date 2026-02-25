@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { HTMLRenderAdapterInterface, HTMLRenderAdapterOffscreenTargetInterface } from '../render_adapters/HTMLRenderAdapterInterface';
+import { ZHTMLRenderAdapterInterface, ZHTMLRenderAdapterOffscreenTargetInterface } from '../render_adapters/ZHTMLRenderAdapterInterface';
 
-export class HTMLQuad extends THREE.Mesh {
+export class ZHTMLQuad extends THREE.Mesh {
 
 	public readonly quad_material: THREE.MeshBasicMaterial;
 	public readonly quad_geometry: THREE.PlaneGeometry;
-	public readonly offscreen_target: HTMLRenderAdapterOffscreenTargetInterface;
+	public readonly offscreen_target: ZHTMLRenderAdapterOffscreenTargetInterface;
 
-	public constructor(options: { render_adapter: HTMLRenderAdapterInterface }) {
+	public constructor(options: { render_adapter: ZHTMLRenderAdapterInterface }) {
 
 		const offscreen_target = options.render_adapter.createOffscreenTarget({
 			width: 1,
@@ -27,7 +27,7 @@ export class HTMLQuad extends THREE.Mesh {
 
 	}
 
-	public render(options: { render_adapter: HTMLRenderAdapterInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void {
+	public render(options: { render_adapter: ZHTMLRenderAdapterInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void {
 		this.visible = false;
 		this.quad_material.visible = false;
 		options.render_adapter.renderOffscreenTarget({
@@ -40,7 +40,7 @@ export class HTMLQuad extends THREE.Mesh {
 		this.quad_material.visible = true;
 	}
 
-	public readPixelColor(options: { render_adapter: HTMLRenderAdapterInterface, window_x: number, window_y: number, bounds: DOMRectReadOnly }): Float32Array {
+	public readPixelColor(options: { render_adapter: ZHTMLRenderAdapterInterface, window_x: number, window_y: number, bounds: DOMRectReadOnly }): Float32Array {
 		return options.render_adapter.readPixelFromOffscreenTarget({
 			target: this.offscreen_target,
 			window_x: options.window_x,

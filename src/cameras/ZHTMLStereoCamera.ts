@@ -1,19 +1,19 @@
 import * as THREE from 'three';
-import { HTMLPerspectiveCamera } from './HTMLPerspectiveCamera';
+import { ZHTMLPerspectiveCamera } from './ZHTMLPerspectiveCamera';
 
-export type HTMLStereoCameraEye = 'left' | 'right';
+export type ZHTMLStereoCameraEye = 'left' | 'right';
 
 /**
  * Camera that uses two perspective cameras to render a stereo view, similar to (but does not subclass / inherit from) THREE.StereoCamera.
  * @see https://threejs.org/docs/#api/en/cameras/StereoCamera
  */
-export class HTMLStereoCamera extends THREE.PerspectiveCamera {
+export class ZHTMLStereoCamera extends THREE.PerspectiveCamera {
 
 
 	// MARK: - Public Properties
 
-	readonly camera_left: HTMLPerspectiveCamera;
-	readonly camera_right: HTMLPerspectiveCamera;
+	readonly camera_left: ZHTMLPerspectiveCamera;
+	readonly camera_right: ZHTMLPerspectiveCamera;
 
 	// MARK: - Public Accessors
 
@@ -32,8 +32,8 @@ export class HTMLStereoCamera extends THREE.PerspectiveCamera {
 		
 		super(fov, aspect, near, far);
 
-		this.camera_left = new HTMLPerspectiveCamera(fov, aspect, near, far);
-		this.camera_right = new HTMLPerspectiveCamera(fov, aspect, near, far);
+		this.camera_left = new ZHTMLPerspectiveCamera(fov, aspect, near, far);
+		this.camera_right = new ZHTMLPerspectiveCamera(fov, aspect, near, far);
 
 		this.add(this.camera_left);
 		this.add(this.camera_right);

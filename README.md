@@ -13,29 +13,29 @@ npm install zhtml three
 ```ts
 import * as THREE from 'three';
 import {
-  HTMLRenderer,
-  HTMLRenderTarget,
-  HTMLWebGLRenderAdapter,
-  HTMLPerspectiveCamera,
-  HTMLObject3D,
-  HTMLInternalMaterialOverlay,
+  ZHTMLRenderer,
+  ZHTMLRenderTarget,
+  ZHTMLWebGLRenderAdapter,
+  ZHTMLPerspectiveCamera,
+  ZHTMLObject3D,
+  ZHTMLInternalMaterialOverlay,
 } from 'zhtml';
 
 // Create scene, camera, renderer
 const scene = new THREE.Scene();
-const camera = new HTMLPerspectiveCamera(50, 1, 0.1, 1000);
+const camera = new ZHTMLPerspectiveCamera(50, 1, 0.1, 1000);
 const threeRenderer = new THREE.WebGLRenderer({ antialias: true });
 
 // Create HTML renderer and render target
-const renderAdapter = new HTMLWebGLRenderAdapter(threeRenderer);
-const htmlRenderer = new HTMLRenderer({ render_adapter: renderAdapter });
-const renderTarget = new HTMLRenderTarget({ type: 'overlay' });
+const renderAdapter = new ZHTMLWebGLRenderAdapter(threeRenderer);
+const htmlRenderer = new ZHTMLRenderer({ render_adapter: renderAdapter });
+const renderTarget = new ZHTMLRenderTarget({ type: 'overlay' });
 
 // Add HTML object with geometry
-const htmlObject = new HTMLObject3D({
+const htmlObject = new ZHTMLObject3D({
   geometry_node: new THREE.Mesh(
     new THREE.PlaneGeometry(1, 1),
-    new HTMLInternalMaterialOverlay()
+    new ZHTMLInternalMaterialOverlay()
   ),
 });
 scene.add(htmlObject);
@@ -55,19 +55,19 @@ function animate() {
 
 | Export | Description |
 |--------|-------------|
-| `HTMLRenderer` | Main render loop |
-| `HTMLRenderTarget` | DOM structure and object-to-element mapping |
-| `HTMLWebGLRenderAdapter` | WebGL render adapter |
-| `HTMLPerspectiveCamera` | Perspective camera with HTML alignment |
-| `HTMLOrthographicCamera` | Orthographic camera |
-| `HTMLStereoCamera` | Stereo (VR) camera |
-| `HTMLObject3D` | 3D object linked to DOM elements |
-| `HTMLQuad` | Offscreen render for pixel raycasting |
-| `HTMLGeometrySolverPlane` | Helper to sync plane geometry with DOM elements (explicit, implicit, or none) |
-| `HTMLRaycast` | Hit testing (pixel and object-based) |
-| `HTMLOrbitControls` | Orbit controls with attach/detach |
-| `HTMLShaderMaterial` | Base shader material for HTML rendering |
-| `HTMLInternalMaterialOverlay` | Overlay material |
-| `HTMLInternalMaterialEmbed` | Embed material (cuts hole in scene) |
+| `ZHTMLRenderer` | Main render loop |
+| `ZHTMLRenderTarget` | DOM structure and object-to-element mapping |
+| `ZHTMLWebGLRenderAdapter` | WebGL render adapter |
+| `ZHTMLPerspectiveCamera` | Perspective camera with HTML alignment |
+| `ZHTMLOrthographicCamera` | Orthographic camera |
+| `ZHTMLStereoCamera` | Stereo (VR) camera |
+| `ZHTMLObject3D` | 3D object linked to DOM elements |
+| `ZHTMLQuad` | Offscreen render for pixel raycasting |
+| `ZHTMLGeometrySolverPlane` | Helper to sync plane geometry with DOM elements (explicit, implicit, or none) |
+| `ZHTMLRaycast` | Hit testing (pixel and object-based) |
+| `ZHTMLOrbitControls` | Orbit controls with attach/detach |
+| `ZHTMLShaderMaterial` | Base shader material for HTML rendering |
+| `ZHTMLInternalMaterialOverlay` | Overlay material |
+| `ZHTMLInternalMaterialEmbed` | Embed material (cuts hole in scene) |
 
 See `EXPLAIN.md` for detailed architecture and data flow.

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { HTMLObject3D } from '../objects/HTMLObject3D';
+import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
 
-export class HTMLRenderTarget {
+export class ZHTMLRenderTarget {
 
 	readonly uuid: string = THREE.MathUtils.generateUUID();
 	readonly type: 'embed' | 'overlay';
@@ -82,7 +82,7 @@ export class HTMLRenderTarget {
 		this.type = options.type;
 	}
 	
-	public getElementForObject(object: HTMLObject3D): HTMLElement | null {
+	public getElementForObject(object: ZHTMLObject3D): HTMLElement | null {
 		const cached_element = this._object_uuid_to_html_element[object.uuid];
 		if (cached_element) {
 			return cached_element;

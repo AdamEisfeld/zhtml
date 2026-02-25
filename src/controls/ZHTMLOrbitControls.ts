@@ -16,7 +16,7 @@ import * as THREE from 'three';
  * - The keyboard values have been changed from deprecated keycodes to string-based key values.
  * - The domElement is now configured at runtime by calling attach() and detach() methods.
  */
-export class HTMLOrbitControls {
+export class ZHTMLOrbitControls {
 
 	// MARK: - HTML Additions
 

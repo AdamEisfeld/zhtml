@@ -1,19 +1,19 @@
 import * as THREE from 'three';
-import { HTMLCameraInterface } from '../cameras/HTMLCameraInterface';
-import { HTMLObject3D } from '../objects/HTMLObject3D';
-import { HTMLRenderEventWillRender } from '../events/HTMLRenderEventWillRender';
-import { HTMLRenderEventCanvasResized } from '../events/HTMLRenderEventCanvasResized';
-import { HTMLRenderAdapterInterface } from '../render_adapters/HTMLRenderAdapterInterface';
-import { HTMLRenderTarget } from './HTMLRenderTarget';
+import { ZHTMLCameraInterface } from '../cameras/ZHTMLCameraInterface';
+import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
+import { ZHTMLRenderEventWillRender } from '../events/ZHTMLRenderEventWillRender';
+import { ZHTMLRenderEventCanvasResized } from '../events/ZHTMLRenderEventCanvasResized';
+import { ZHTMLRenderAdapterInterface } from '../render_adapters/ZHTMLRenderAdapterInterface';
+import { ZHTMLRenderTarget } from './ZHTMLRenderTarget';
 
-export class HTMLRenderer {
+export class ZHTMLRenderer {
 
-	private _render_adapter: HTMLRenderAdapterInterface;
-	private _render_target_uuids_to_rendered_objects_this_frame: Record<string, Record<string, HTMLObject3D>> = {};
-	private _render_target_uuids_to_rendered_objects_last_frame: Record<string, Record<string, HTMLObject3D>> = {};
+	private _render_adapter: ZHTMLRenderAdapterInterface;
+	private _render_target_uuids_to_rendered_objects_this_frame: Record<string, Record<string, ZHTMLObject3D>> = {};
+	private _render_target_uuids_to_rendered_objects_last_frame: Record<string, Record<string, ZHTMLObject3D>> = {};
 	private _render_target_uuids_to_camera_transform_ids: Record<string, number> = {};
 	private _render_target_uuids_to_object_transform_ids: Record<string, Record<string, number>> = {};
-	private _current_render_target: HTMLRenderTarget | null = null;
+	private _current_render_target: ZHTMLRenderTarget | null = null;
 	private _canvas_resize_observer: ResizeObserver | null = null;
 	private _canvas_bounds: DOMRectReadOnly = new DOMRectReadOnly();
 	private _canvas_resize_id: number = 1;
@@ -22,7 +22,7 @@ export class HTMLRenderer {
 		return this._element;
 	}
 	public html_renderer_uuid: string = THREE.MathUtils.generateUUID();
-	public get render_adapter(): HTMLRenderAdapterInterface {
+	public get render_adapter(): ZHTMLRenderAdapterInterface {
 		return this._render_adapter;
 	}
 
@@ -30,7 +30,7 @@ export class HTMLRenderer {
 		return this._canvas_bounds;
 	}
 
-	constructor(options: { render_adapter: HTMLRenderAdapterInterface, element?: HTMLElement }) {
+	constructor(options: { render_adapter: ZHTMLRenderAdapterInterface, element?: HTMLElement }) {
 
 		this._render_adapter = options.render_adapter;
 		if (!options.element) {
@@ -53,20 +53,20 @@ export class HTMLRenderer {
 		this._canvas_resize_observer = new ResizeObserver(() => {
 			this._canvas_bounds = this._element.getBoundingClientRect();
 			this._canvas_resize_id *= -1;
-			document.dispatchEvent(new HTMLRenderEventCanvasResized({
+			document.dispatchEvent(new ZHTMLRenderEventCanvasResized({
 				element: this._element,
 				bounds: this._canvas_bounds,
 			}));
 		});
 		this._canvas_resize_observer.observe(this._element);
 
-		document.addEventListener(HTMLRenderEventWillRender.event_name, (event: Event) => {
+		document.addEventListener(ZHTMLRenderEventWillRender.event_name, (event: Event) => {
 			
-			if (!(event instanceof HTMLRenderEventWillRender)) {
+			if (!(event instanceof ZHTMLRenderEventWillRender)) {
 				return;
 			}
 
-			if (!(event.object instanceof HTMLObject3D)) {
+			if (!(event.object instanceof ZHTMLObject3D)) {
 				return;
 			}
 
@@ -87,9 +87,9 @@ export class HTMLRenderer {
 
 	}
 
-	public getRenderedObjects(): HTMLObject3D[] {
+	public getRenderedObjects(): ZHTMLObject3D[] {
 		const render_target_uuids = Object.keys(this._render_target_uuids_to_rendered_objects_this_frame);
-		const visible_objects: Record<string, HTMLObject3D> = {};
+		const visible_objects: Record<string, ZHTMLObject3D> = {};
 		for (let i = 0, l = render_target_uuids.length; i < l; i += 1) {
 			const render_target_uuid = render_target_uuids[i];
 			const object_uuids = Object.keys(this._render_target_uuids_to_rendered_objects_this_frame[render_target_uuid]);
@@ -102,7 +102,7 @@ export class HTMLRenderer {
 		return Object.values(visible_objects);
 	}
 
-	public render(options: { scene: THREE.Scene, camera: THREE.Camera & HTMLCameraInterface, render_target: HTMLRenderTarget }): void {
+	public render(options: { scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget }): void {
 		
 		const { scene, camera, render_target } = options;
 		
@@ -158,8 +158,8 @@ export class HTMLRenderer {
 
 		// MARK: - Step 6
 		// Ensure any objects rendered by the camera this frame are visible and have updated transforms
-		const mutable_object_uuids_shown_this_frame: Record<string, HTMLObject3D> = {};
-		const mutable_render_target_uuids_to_object_uuids_shown_last_frame_not_this_frame: Record<string, HTMLObject3D> = this._render_target_uuids_to_rendered_objects_last_frame[render_target.uuid] ?? {};
+		const mutable_object_uuids_shown_this_frame: Record<string, ZHTMLObject3D> = {};
+		const mutable_render_target_uuids_to_object_uuids_shown_last_frame_not_this_frame: Record<string, ZHTMLObject3D> = this._render_target_uuids_to_rendered_objects_last_frame[render_target.uuid] ?? {};
 		const objects_to_show = this._render_target_uuids_to_rendered_objects_this_frame[render_target.uuid] ?? {};
 		const object_uuids_to_show = Object.keys(objects_to_show);
 		for (let i = 0, l = object_uuids_to_show.length; i < l; i += 1) {

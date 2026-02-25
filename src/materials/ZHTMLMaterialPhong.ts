@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HTMLShaderMaterial } from './HTMLShaderMaterial';
+import { ZHTMLShaderMaterial } from './ZHTMLShaderMaterial';
 
 const glsl_vertex =
 /* glsl */`
@@ -147,7 +147,7 @@ void main() {
 }
 `;
 
-export class HTMLMaterialPhong extends HTMLShaderMaterial {
+export class ZHTMLMaterialPhong extends ZHTMLShaderMaterial {
 
 	set roughness(value: number) {
 		this.uniforms.roughness.value = value;

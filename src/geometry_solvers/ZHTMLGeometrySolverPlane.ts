@@ -1,24 +1,24 @@
 import * as THREE from 'three';
-import { HTMLObject3D } from '../objects/HTMLObject3D';
-import { HTMLInternalMaterialEmbed } from '../materials/HTMLInternalMaterialEmbed';
-import type { HTMLRenderSize } from '../utils/HTMLRendererUtils';
+import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
+import { ZHTMLInternalMaterialEmbed } from '../materials/ZHTMLInternalMaterialEmbed';
+import type { ZHTMLRenderSize } from '../utils/ZHTMLRendererUtils';
 
-export type HTMLGeometrySolverPlaneConfig = { style: 'explicit', size: HTMLRenderSize } | { style: 'implicit' } | { style: 'none'}
+export type ZHTMLGeometrySolverPlaneConfig = { style: 'explicit', size: ZHTMLRenderSize } | { style: 'implicit' } | { style: 'none'}
 
-export class HTMLGeometrySolverPlane {
+export class ZHTMLGeometrySolverPlane {
 
-	object: HTMLObject3D;
-	config: HTMLGeometrySolverPlaneConfig;
+	object: ZHTMLObject3D;
+	config: ZHTMLGeometrySolverPlaneConfig;
 	geometry_node: THREE.Mesh;
 	_resize_observer: ResizeObserver | null = null;
 
-	constructor(options: { object: HTMLObject3D, config: HTMLGeometrySolverPlaneConfig }) {
+	constructor(options: { object: ZHTMLObject3D, config: ZHTMLGeometrySolverPlaneConfig }) {
 
 		this.object = options.object;
 		this.config = options.config;
 		this.geometry_node = new THREE.Mesh();
 		this.geometry_node.geometry = new THREE.PlaneGeometry(1, 1);
-		this.geometry_node.material = new HTMLInternalMaterialEmbed();
+		this.geometry_node.material = new ZHTMLInternalMaterialEmbed();
 
 		const elements = this.object.getAllElements();
 

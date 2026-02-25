@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { HTMLRenderTarget } from '../render/HTMLRenderTarget';
-import { HTMLCameraInterface } from './HTMLCameraInterface';
+import { ZHTMLRenderTarget } from '../render/ZHTMLRenderTarget';
+import { ZHTMLCameraInterface } from './ZHTMLCameraInterface';
 
-export interface HTMLCameraProviderInterface {
+export interface ZHTMLCameraProviderInterface {
 
 	// MARK: - Methods
 
@@ -11,7 +11,7 @@ export interface HTMLCameraProviderInterface {
 	 */
 	html_needs_layout: boolean;
 
-	getCameraTargetPairs(): { camera: THREE.Camera & HTMLCameraInterface, render_target: HTMLRenderTarget | null }[];
+	getCameraTargetPairs(): { camera: THREE.Camera & ZHTMLCameraInterface, render_target: ZHTMLRenderTarget | null }[];
 
 	dispose(): void;
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { HTMLRenderAdapterInterface, HTMLRenderAdapterOffscreenTargetInterface } from './HTMLRenderAdapterInterface';
+import { ZHTMLRenderAdapterInterface, ZHTMLRenderAdapterOffscreenTargetInterface } from './ZHTMLRenderAdapterInterface';
 
-export class HTMLWebGLRenderAdapterOffscreenTarget implements HTMLRenderAdapterOffscreenTargetInterface {
+export class ZHTMLWebGLRenderAdapterOffscreenTarget implements ZHTMLRenderAdapterOffscreenTargetInterface {
 
 	_gl_render_target: THREE.WebGLRenderTarget;
 	_material: THREE.MeshBasicMaterial;
@@ -22,7 +22,7 @@ export class HTMLWebGLRenderAdapterOffscreenTarget implements HTMLRenderAdapterO
 
 }
 
-export class HTMLWebGLRenderAdapter implements HTMLRenderAdapterInterface {
+export class ZHTMLWebGLRenderAdapter implements ZHTMLRenderAdapterInterface {
 
 	public get domElement(): HTMLCanvasElement {
 		return this._renderer.domElement;
@@ -47,7 +47,7 @@ export class HTMLWebGLRenderAdapter implements HTMLRenderAdapterInterface {
 		this._renderer.setSize(width, height);
 	}
 
-	public createOffscreenTarget(options: { width: number, height: number }): HTMLRenderAdapterOffscreenTargetInterface {
+	public createOffscreenTarget(options: { width: number, height: number }): ZHTMLRenderAdapterOffscreenTargetInterface {
 		const gl_render_target = new THREE.WebGLRenderTarget(options.width, options.height, {
 			format: THREE.RGBAFormat,
 			stencilBuffer: false,
@@ -56,12 +56,12 @@ export class HTMLWebGLRenderAdapter implements HTMLRenderAdapterInterface {
 			minFilter: THREE.LinearFilter,
 			type: THREE.FloatType,
 		});
-		return new HTMLWebGLRenderAdapterOffscreenTarget(gl_render_target);
+		return new ZHTMLWebGLRenderAdapterOffscreenTarget(gl_render_target);
 	}
 
-	public renderOffscreenTarget(options: { target: HTMLRenderAdapterOffscreenTargetInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void {
-		const target_adapter = options.target as HTMLWebGLRenderAdapterOffscreenTarget;
-		if (!(target_adapter instanceof HTMLWebGLRenderAdapterOffscreenTarget)) {
+	public renderOffscreenTarget(options: { target: ZHTMLRenderAdapterOffscreenTargetInterface, scene: THREE.Scene, camera: THREE.Camera, size: THREE.Vec2 }): void {
+		const target_adapter = options.target as ZHTMLWebGLRenderAdapterOffscreenTarget;
+		if (!(target_adapter instanceof ZHTMLWebGLRenderAdapterOffscreenTarget)) {
 			throw new Error('Invalid target');
 		}
 		
@@ -74,9 +74,9 @@ export class HTMLWebGLRenderAdapter implements HTMLRenderAdapterInterface {
 	}
 
 	// TODO: Move window origin subtraction layer up
-	public readPixelFromOffscreenTarget(options: { target: HTMLRenderAdapterOffscreenTargetInterface, window_x: number, window_y: number, bounds: DOMRectReadOnly }): Float32Array {
-		const target_adapter = options.target as HTMLWebGLRenderAdapterOffscreenTarget;
-		if (!(target_adapter instanceof HTMLWebGLRenderAdapterOffscreenTarget)) {
+	public readPixelFromOffscreenTarget(options: { target: ZHTMLRenderAdapterOffscreenTargetInterface, window_x: number, window_y: number, bounds: DOMRectReadOnly }): Float32Array {
+		const target_adapter = options.target as ZHTMLWebGLRenderAdapterOffscreenTarget;
+		if (!(target_adapter instanceof ZHTMLWebGLRenderAdapterOffscreenTarget)) {
 			throw new Error('Invalid target');
 		}
 		

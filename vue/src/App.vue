@@ -4,15 +4,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'stats.js';
 import {
-  HTMLRenderer,
-  HTMLPerspectiveCamera,
-  HTMLOrthographicCamera,
-  HTMLStereoCamera,
-  HTMLRenderTarget,
-  HTMLWebGLRenderAdapter,
-  HTMLRaycast,
-  HTMLQuad,
-  HTMLCameraInterface,
+  ZHTMLRenderer,
+  ZHTMLPerspectiveCamera,
+  ZHTMLOrthographicCamera,
+  ZHTMLStereoCamera,
+  ZHTMLRenderTarget,
+  ZHTMLWebGLRenderAdapter,
+  ZHTMLRaycast,
+  ZHTMLQuad,
+  ZHTMLCameraInterface,
 } from 'zhtml';
 import HTMLRenderViewSplit from '@/components/HTMLRenderViewSplit.vue';
 import { DemoScene } from './demo/DemoScene';
@@ -42,36 +42,36 @@ export default defineComponent({
     gl_renderer.shadowMap.enabled = true;
     gl_renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    const render_adapter = new HTMLWebGLRenderAdapter(gl_renderer);
-    const renderer = new HTMLRenderer({ render_adapter });
+    const render_adapter = new ZHTMLWebGLRenderAdapter(gl_renderer);
+    const renderer = new ZHTMLRenderer({ render_adapter });
 
     let camera: THREE.Camera;
-    let camera_render_target_pairs: { camera: THREE.Camera & HTMLCameraInterface; render_target: HTMLRenderTarget }[] = [];
+    let camera_render_target_pairs: { camera: THREE.Camera & ZHTMLCameraInterface; render_target: ZHTMLRenderTarget }[] = [];
 
     if (demo_type === 'persp') {
-      const camera_persp = new HTMLPerspectiveCamera(35, 1, 1, 20000);
+      const camera_persp = new ZHTMLPerspectiveCamera(35, 1, 1, 20000);
       camera_persp.position.set(0, 0, 1000);
       scene.add(camera_persp);
       camera = camera_persp;
       camera_render_target_pairs = [
-        { camera: camera_persp, render_target: new HTMLRenderTarget({ type: 'embed' }) },
+        { camera: camera_persp, render_target: new ZHTMLRenderTarget({ type: 'embed' }) },
       ];
     } else if (demo_type === 'ortho') {
-      const camera_ortho = new HTMLOrthographicCamera(-1, 1, 1, -1, 1, 20000);
+      const camera_ortho = new ZHTMLOrthographicCamera(-1, 1, 1, -1, 1, 20000);
       camera_ortho.position.set(0, 0, 500);
       scene.add(camera_ortho);
       camera = camera_ortho;
       camera_render_target_pairs = [
-        { camera: camera_ortho, render_target: new HTMLRenderTarget({ type: 'embed' }) },
+        { camera: camera_ortho, render_target: new ZHTMLRenderTarget({ type: 'embed' }) },
       ];
     } else {
-      const camera_stereo = new HTMLStereoCamera(45, 1, 1, 20000);
+      const camera_stereo = new ZHTMLStereoCamera(45, 1, 1, 20000);
       camera_stereo.position.set(0, 0, 800);
       scene.add(camera_stereo);
       camera = camera_stereo;
       camera_render_target_pairs = [
-        { camera: camera_stereo.camera_left, render_target: new HTMLRenderTarget({ type: 'embed' }) },
-        { camera: camera_stereo.camera_right, render_target: new HTMLRenderTarget({ type: 'embed' }) },
+        { camera: camera_stereo.camera_left, render_target: new ZHTMLRenderTarget({ type: 'embed' }) },
+        { camera: camera_stereo.camera_right, render_target: new ZHTMLRenderTarget({ type: 'embed' }) },
       ];
     }
 
@@ -80,9 +80,9 @@ export default defineComponent({
       const gl_container = document.querySelector('[name="gl_container_element"]') as HTMLDivElement;
       if (!scene_container_element || !gl_container) return;
 
-      const raycast_quad = new HTMLQuad({ render_adapter });
+      const raycast_quad = new ZHTMLQuad({ render_adapter });
       raycast_quad.quad_material.opacity = 0.8;
-      const raycast = new HTMLRaycast();
+      const raycast = new ZHTMLRaycast();
 
       gl_container.appendChild(renderer.element);
 

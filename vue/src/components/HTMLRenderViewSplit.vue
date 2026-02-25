@@ -1,20 +1,20 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { HTMLRenderTarget } from 'zhtml';
+import { ZHTMLRenderTarget } from 'zhtml';
 
 export default defineComponent({
   name: 'HTMLRenderViewSplit',
   props: {
     render_target: {
-      type: HTMLRenderTarget,
+      type: ZHTMLRenderTarget,
       default: null,
     },
     left_render_target: {
-      type: HTMLRenderTarget,
+      type: ZHTMLRenderTarget,
       default: null,
     },
     right_render_target: {
-      type: HTMLRenderTarget,
+      type: ZHTMLRenderTarget,
       default: null,
     },
     gl_container_name: {

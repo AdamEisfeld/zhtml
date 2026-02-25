@@ -12,7 +12,7 @@
     "stats.js": "^0.17.0",
     "three": "^0.159.0",
     "vue": "^3.3.8",
-    "zhtml": "file:../.."
+    "zhtml": "file:.."
   },
   "devDependencies": {
     "@types/stats": "^0.16.30",
