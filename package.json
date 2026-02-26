@@ -13,7 +13,10 @@
       "default": "./dist/zhtml.js"
     }
   },
-  "files": ["dist", "EXPLAIN.md"],
+  "files": [
+    "dist",
+    "EXPLAIN.md"
+  ],
   "scripts": {
     "build": "vite build",
     "prepublishOnly": "npm run build"

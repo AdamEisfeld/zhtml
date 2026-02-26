@@ -61,8 +61,14 @@ export class ZHTMLWebGLRenderAdapter implements ZHTMLRenderAdapterInterface {
 		const originalRenderTarget = this._renderer.getRenderTarget();
 		targetAdapter._glRenderTarget.setSize(options.size.x, options.size.y);
 		this._renderer.setRenderTarget(targetAdapter._glRenderTarget);
+
+		// Ensure full viewport and no scissor clipping - previous main render may have left viewport/scissor in canvas coords
+		this._renderer.setViewport(0, 0, options.size.x, options.size.y);
+		this._renderer.setScissorTest(false);
 		this._renderer.clear();
 		this._renderer.render(options.scene, options.camera);
+		this._renderer.setScissorTest(true);
+
 		this._renderer.setRenderTarget(originalRenderTarget);
 	}
 

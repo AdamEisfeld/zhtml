@@ -20,14 +20,6 @@ export class ZHTMLShaderMaterial extends FileShaderMaterial {
 	get htmlPixelTestEnabled(): boolean {
 		return this.uniforms.htmlPixelTestEnabled.value === 1;
 	}
-	
-	set htmlPixelTestColor(value: THREE.Color) {
-		this.uniforms.htmlPixelTestColor.value = value;
-	}
-
-	get htmlPixelTestColor(): THREE.Color {
-		return this.uniforms.htmlPixelTestColor.value;
-	}
 
 	private _onEnableColorPickingBind: (event: ZHTMLRenderEventEnableColorPicking) => void;
 	private _onDisableColorPickingBind: (event: ZHTMLRenderEventDisableColorPicking) => void;
@@ -44,7 +36,6 @@ export class ZHTMLShaderMaterial extends FileShaderMaterial {
 		// Inject required uniforms for HTML rendering
 		const mutableUniforms = mutableParameters.uniforms || {};
 		mutableUniforms.htmlPixelTestEnabled = { value: 0 };
-		mutableUniforms.htmlPixelTestColor = { value: ZHTMLShaderMaterial.htmlPixelTestColor };
 		mutableParameters.uniforms = mutableUniforms;
 		
 		super(mutableParameters);

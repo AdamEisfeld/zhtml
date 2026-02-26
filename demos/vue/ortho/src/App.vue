@@ -1,7 +1,6 @@
 <script lang="ts">
 import { Ref, defineComponent, onMounted, ref } from 'vue';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'stats.js';
 import {
 	ZHTMLRenderer,
@@ -14,6 +13,7 @@ import {
 } from 'zhtml';
 import ZHTMLRenderViewOrtho from '@/components/ZHTMLRenderViewOrtho.vue';
 import { DemoScene } from '../../shared/DemoScene';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 export default defineComponent({
 	name: 'DemoApplication',
@@ -67,8 +67,12 @@ export default defineComponent({
 			controls.enableDamping = true;
 			controls.zoomSpeed = 0.3;
 			let isOrbitting = false;
-			controls.addEventListener('start', () => { isOrbitting = true; });
-			controls.addEventListener('end', () => { isOrbitting = false; });
+			controls.addEventListener('start', () => {
+				isOrbitting = true;
+			});
+			controls.addEventListener('end', () => {
+				isOrbitting = false;
+			});
 
 			window.addEventListener('mousemove', mouseMoveHandler);
 
@@ -132,8 +136,8 @@ export default defineComponent({
 					}
 				}
 
-				controls.update();
 				controls.enabled = isOrbitting || !raycastDidHit;
+				controls.update();
 
 				stats.end();
 				requestAnimationFrame(renderLoop);
@@ -204,7 +208,7 @@ export default defineComponent({
 						>
 							<div
 								class="w-full h-full flex flex-col bg-pink-500 text-white overflow-scroll p-4"
-								:scroll-top="scrollOffset"
+								:scrollTop="scrollOffset"
 								@scroll="onScroll"
 							>
 								<span class="font-semibold text-xl select-none">Scrollable Content</span>

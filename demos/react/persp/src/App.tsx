@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'stats.js';
 import {
 	ZHTMLRenderer,
@@ -13,6 +12,7 @@ import {
 } from 'zhtml';
 import { ZHTMLRenderViewPersp } from '@/components/ZHTMLRenderViewPersp';
 import { DemoScene } from '../../shared/DemoScene';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 const scene = new DemoScene();
 const glRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -57,8 +57,12 @@ export default function App() {
 		controls.enableDamping = true;
 		controls.zoomSpeed = 0.3;
 		let isOrbitting = false;
-		controls.addEventListener('start', () => { isOrbitting = true; });
-		controls.addEventListener('end', () => { isOrbitting = false; });
+		controls.addEventListener('start', () => {
+			isOrbitting = true;
+		});
+		controls.addEventListener('end', () => {
+			isOrbitting = false;
+		});
 
 		let mouseX = 0;
 		let mouseY = 0;
@@ -120,8 +124,8 @@ export default function App() {
 				}
 			}
 
-			controls.update();
 			controls.enabled = isOrbitting || !raycastDidHit;
+			controls.update();
 
 			stats.end();
 			frameId = requestAnimationFrame(renderLoop);

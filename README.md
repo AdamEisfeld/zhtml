@@ -280,13 +280,14 @@ for (const r of results) {
 Orbit controls with attach/detach and an `onShouldBegin` callback to conditionally block input (e.g. when over HTML).
 
 ```ts
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ZHTMLOrbitControls } from 'zhtml';
 
-const controls = new OrbitControls(camera, domElement);
+const controls = new ZHTMLOrbitControls(camera);
+controls.attach(domElement);  // call detach() when unmounting
 controls.enableDamping = true;
 controls.zoomSpeed = 0.3;
 
-// Optional: prevent orbit when over HTML
+// Prevent orbit when over HTML (set isOverHTML from raycast each frame)
 let isOverHTML = false;
 controls.onShouldBegin = () => !isOverHTML;
 
@@ -294,12 +295,11 @@ controls.addEventListener('start', () => { /* e.g. disable HTML hit */ });
 controls.addEventListener('end', () => { /* e.g. re-enable */ });
 
 function animate() {
+  // ... update isOverHTML from raycast.intersectRenderedPixels() ...
   controls.update();
   // ...
 }
 ```
-
-Note: The demos use Three.js's `OrbitControls` from `three/addons/controls/OrbitControls.js` for compatibility. `ZHTMLOrbitControls` (exported by zhtml) is an alternative with attach/detach and `onShouldBegin` for conditional input blocking.
 
 ## Layout Updates
 
@@ -371,17 +371,6 @@ npm run dev:persp
 ```
 
 Demo `package.json` files use `"zhtml": "file:../../.."` (or `"file:../../../.."` from sub-packages) to link the local build.
-
-## COOP/COEP Headers (SharedArrayBuffer)
-
-If you use features that require `SharedArrayBuffer` (e.g. some WASM), ensure your dev server sends:
-
-```
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: require-corp
-```
-
-The demos configure this in their Vite config.
 
 ## API Reference
 
