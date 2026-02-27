@@ -4,7 +4,7 @@ import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
 export class ZHTMLRenderTarget {
 
 	readonly uuid: string = THREE.MathUtils.generateUUID();
-	readonly type: 'embed' | 'overlay';
+
 	private _sceneElement: HTMLElement | null = null;
 	private _cameraElement: HTMLElement | null = null;
 
@@ -76,10 +76,6 @@ export class ZHTMLRenderTarget {
 		}
 		this._bounds = this.sceneElement.getBoundingClientRect();
 		this._boundsResizeId = options.resizeId;
-	}
-
-	constructor(options: { type: 'embed' | 'overlay' }) {
-		this.type = options.type;
 	}
 	
 	public getElementForObject(object: ZHTMLObject3D): HTMLElement | null {

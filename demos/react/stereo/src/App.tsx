@@ -25,10 +25,11 @@ const cameraStereo = new ZHTMLStereoCamera(45, 1, 1, 20000);
 cameraStereo.position.set(0, 0, 800);
 scene.add(cameraStereo);
 const cameraRenderTargetPairs: { camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }[] = [
-	{ camera: cameraStereo.cameraLeft, renderTarget: new ZHTMLRenderTarget({ type: 'embed' }) },
-	{ camera: cameraStereo.cameraRight, renderTarget: new ZHTMLRenderTarget({ type: 'embed' }) },
+	{ camera: cameraStereo.cameraLeft, renderTarget: new ZHTMLRenderTarget() },
+	{ camera: cameraStereo.cameraRight, renderTarget: new ZHTMLRenderTarget() },
 ];
 const renderTargets = cameraRenderTargetPairs.map((p) => p.renderTarget);
+const showDebugQuad = false;
 
 export default function App() {
 	const [text, setText] = useState('Hello World!');
@@ -110,6 +111,15 @@ export default function App() {
 					camera: pair.camera,
 					renderTarget: pair.renderTarget,
 				});
+
+				if (showDebugQuad) {
+					pair.camera.showQuad({
+						quad: raycastQuad,
+						distance: 10,
+						width: pair.renderTarget.bounds.width,
+						height: pair.renderTarget.bounds.height,
+					});
+				}
 			}
 
 			for (let i = 0; i < cameraRenderTargetPairs.length; i++) {

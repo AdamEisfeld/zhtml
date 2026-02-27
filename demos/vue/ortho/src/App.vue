@@ -45,7 +45,7 @@ export default defineComponent({
 		cameraOrtho.lookAt(0, 0, 0);
 		scene.add(cameraOrtho);
 		const cameraRenderTargetPairs: { camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }[] = [
-			{ camera: cameraOrtho, renderTarget: new ZHTMLRenderTarget({ type: 'embed' }) },
+			{ camera: cameraOrtho, renderTarget: new ZHTMLRenderTarget() },
 		];
 
 		onMounted(() => {

@@ -49,6 +49,7 @@ export class DemoLaptop extends THREE.Object3D {
 
 			const geometrySolver = new ZHTMLGeometrySolverPlane({
 				object: this.htmlObject,
+				mode: 'embed',
 				config: {
 					style: 'explicit',
 					size: {

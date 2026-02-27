@@ -44,7 +44,7 @@ export default defineComponent({
 		cameraPersp.position.set(0, 0, 1000);
 		scene.add(cameraPersp);
 		const cameraRenderTargetPairs: { camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }[] = [
-			{ camera: cameraPersp, renderTarget: new ZHTMLRenderTarget({ type: 'embed' }) },
+			{ camera: cameraPersp, renderTarget: new ZHTMLRenderTarget() },
 		];
 
 		onMounted(() => {

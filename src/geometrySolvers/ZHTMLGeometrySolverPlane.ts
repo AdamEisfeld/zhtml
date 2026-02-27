@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { ZHTMLObject3D } from '../objects/ZHTMLObject3D';
-import { ZHTMLInternalMaterialEmbed } from '../materials/ZHTMLInternalMaterialEmbed';
 import type { ZHTMLRenderSize } from '../utils/ZHTMLRendererUtils';
+import { ZHTMLInternalMaterialEmbed } from '../materials/ZHTMLInternalMaterialEmbed';
+import { ZHTMLInternalMaterialOverlay } from '../materials/ZHTMLInternalMaterialOverlay';
 
 export type ZHTMLGeometrySolverPlaneConfig = { style: 'explicit', size: ZHTMLRenderSize } | { style: 'implicit' } | { style: 'none'}
 
@@ -12,13 +13,13 @@ export class ZHTMLGeometrySolverPlane {
 	geometryNode: THREE.Mesh;
 	private _resizeObserver: ResizeObserver | null = null;
 
-	constructor(options: { object: ZHTMLObject3D, config: ZHTMLGeometrySolverPlaneConfig }) {
+	constructor(options: { object: ZHTMLObject3D, mode: 'embed' | 'overlay', config: ZHTMLGeometrySolverPlaneConfig }) {
 
 		this.object = options.object;
 		this.config = options.config;
 		this.geometryNode = new THREE.Mesh();
 		this.geometryNode.geometry = new THREE.PlaneGeometry(1, 1);
-		this.geometryNode.material = new ZHTMLInternalMaterialEmbed();
+		this.geometryNode.material = options.mode === 'embed' ? new ZHTMLInternalMaterialEmbed() : new ZHTMLInternalMaterialOverlay();
 
 		const elements = this.object.getAllElements();
 

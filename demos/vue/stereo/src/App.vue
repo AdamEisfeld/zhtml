@@ -44,8 +44,8 @@ export default defineComponent({
 		cameraStereo.position.set(0, 0, 800);
 		scene.add(cameraStereo);
 		const cameraRenderTargetPairs: { camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }[] = [
-			{ camera: cameraStereo.cameraLeft, renderTarget: new ZHTMLRenderTarget({ type: 'embed' }) },
-			{ camera: cameraStereo.cameraRight, renderTarget: new ZHTMLRenderTarget({ type: 'embed' }) },
+			{ camera: cameraStereo.cameraLeft, renderTarget: new ZHTMLRenderTarget() },
+			{ camera: cameraStereo.cameraRight, renderTarget: new ZHTMLRenderTarget() },
 		];
 
 		onMounted(() => {

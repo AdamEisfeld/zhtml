@@ -43,7 +43,7 @@ glRenderer.shadowMap.enabled = true;
 // 2. Create zhtml renderer and render target
 const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
 const htmlRenderer = new ZHTMLRenderer({ renderAdapter });
-const renderTarget = new ZHTMLRenderTarget({ type: 'embed' });
+const renderTarget = new ZHTMLRenderTarget();
 
 // 3. Create camera and add to scene
 const camera = new ZHTMLPerspectiveCamera(50, 1, 0.1, 1000);
@@ -54,6 +54,7 @@ scene.add(camera);
 const htmlObject = new ZHTMLObject3D({});
 const geometrySolver = new ZHTMLGeometrySolverPlane({
   object: htmlObject,
+  mode: 'embed',
   config: { style: 'explicit', size: { width: 400, height: 300 } },
 });
 htmlObject.htmlGeometryNode = geometrySolver.geometryNode;
@@ -109,12 +110,6 @@ zhtml requires a specific DOM structure so it can find and position HTML element
 The WebGL canvas (`htmlRenderer.element`) and the scene/camera divs must be siblings within the same positioned container. The render target's `sceneElement` and `cameraElement` are resolved via `document.querySelector` using the render target's UUID. Use `buildSceneContainer` and `buildCameraContainer` from `zhtml` if creating the structure programmatically; you must still add the `data-render-target-uuid` and `data-render-target-type` attributes to link them to your render target.
 
 ## Render Targets
-
-### Embed vs Overlay
-
-- **`type: 'embed'`** — Cuts a hole in the WebGL scene. HTML shows through where the geometry is; the geometry writes to the depth buffer so 3D objects can pass in front or behind. Use for HTML panels integrated into the scene (e.g. laptop screens, signs).
-
-- **`type: 'overlay'`** — Renders HTML on top without depth testing. Use for UI overlays that should always appear in front.
 
 ### Enabling Interactions
 
@@ -184,6 +179,12 @@ Extends `THREE.Object3D`. Links 3D geometry to DOM elements.
 
 Creates a plane mesh and syncs its size with HTML elements.
 
+** Embed vs Overlay **
+
+- **`mode: 'embed'`** — Cuts a hole in the WebGL scene. HTML shows through where the geometry is; the geometry writes to the depth buffer so 3D objects can pass in front or behind. Use for HTML panels integrated into the scene (e.g. laptop screens, signs).
+
+- **`mode: 'overlay'`** — Renders HTML on top without depth testing. Use for UI overlays that should always appear in front.
+
 **Config styles:**
 
 - **`style: 'explicit'`** — Fixed size. Requires `size: { width, height }`.
@@ -193,6 +194,7 @@ Creates a plane mesh and syncs its size with HTML elements.
 ```ts
 const solver = new ZHTMLGeometrySolverPlane({
   object: htmlObject,
+  mode: 'embed',
   config: { style: 'explicit', size: { width: 400, height: 300 } },
 });
 htmlObject.htmlGeometryNode = solver.geometryNode;
