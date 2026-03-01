@@ -52,12 +52,10 @@ export class ZHTMLRenderTarget {
 		value.style.setProperty('height', '100%');
 		value.style.setProperty('pointerEvents', 'none');
 		value.style.setProperty('transform-style', 'preserve-3d');
+		value.style.setProperty('user-select', 'none');
 		this._cameraElement = value;
 	}
 	
-	readonly sceneElementUuid: string = THREE.MathUtils.generateUUID();
-	readonly cameraElementUuid: string = THREE.MathUtils.generateUUID();
-
 	private _bounds: DOMRectReadOnly = new DOMRectReadOnly();
 	private _boundsResizeId: number = 1;
 	private _objectUuidToHtmlElement: Record<string, HTMLElement> = {};
@@ -98,24 +96,6 @@ export class ZHTMLRenderTarget {
 	dispose(): void {
 		this.sceneElement.remove();
 		this.cameraElement.remove();
-	}
-
-	enableInteractions(options: { obstructingElements: HTMLElement[] }): void {
-		this.sceneElement?.style.setProperty('pointer-events', 'auto');
-		this.sceneElement?.style.setProperty('user-select', 'auto');
-		for (let i = 0, l = options.obstructingElements.length; i < l; i += 1) {
-			const element = options.obstructingElements[i];
-			element.style.setProperty('pointer-events', 'none');
-		}
-	}
-
-	disableInteractions(options: { obstructingElements: HTMLElement[] }): void {
-		this.sceneElement?.style.setProperty('pointer-events', 'none');
-		this.sceneElement?.style.setProperty('user-select', 'none');
-		for (let i = 0, l = options.obstructingElements.length; i < l; i += 1) {
-			const element = options.obstructingElements[i];
-			element.style.setProperty('pointer-events', 'auto');
-		}
 	}
 		
 }

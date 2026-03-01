@@ -8,32 +8,38 @@ import {
 	ZHTMLWebGLRenderAdapter,
 	ZHTMLRaycast,
 	ZHTMLQuad,
-	ZHTMLCameraInterface,
 } from 'zhtml';
 import { ZHTMLRenderViewPersp } from '@/components/ZHTMLRenderViewPersp';
 import { DemoScene } from '../../shared/DemoScene';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
-const scene = new DemoScene();
-const glRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-glRenderer.shadowMap.enabled = true;
-glRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
-const renderer = new ZHTMLRenderer({ renderAdapter });
-
-const cameraPersp = new ZHTMLPerspectiveCamera(35, 1, 1, 20000);
-cameraPersp.position.set(0, 0, 1000);
-scene.add(cameraPersp);
-const cameraRenderTargetPairs: { camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }[] = [
-	{ camera: cameraPersp, renderTarget: new ZHTMLRenderTarget() },
-];
-const renderTargets = cameraRenderTargetPairs.map((p) => p.renderTarget);
-const showDebugQuad = false;
+const SHOW_DEBUG_QUAD = false;
 
 export default function App() {
 	const [text, setText] = useState('Hello World!');
 	const [scrollOffset, setScrollOffset] = useState(0);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+	const [screenSize, setScreenSize] = useState<{ x: number; y: number } | undefined>(undefined);
+
+	const [scene] = useState(() => new DemoScene({
+		onReady: (ready) => setScreenSize(ready.screenSize),
+	}));
+
+	const [rendererState] = useState(() => {
+		const glRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		glRenderer.shadowMap.enabled = true;
+		glRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
+		const renderer = new ZHTMLRenderer({ renderAdapter });
+		const camera = new ZHTMLPerspectiveCamera(35, 1, 1, 20000);
+		camera.position.set(0, 0, 1000);
+		scene.add(camera);
+		const renderTarget = new ZHTMLRenderTarget();
+		return { glRenderer, renderAdapter, renderer, camera, renderTarget };
+	});
+
+	const { renderAdapter, renderer, camera, renderTarget } = rendererState;
 
 	useEffect(() => {
 		scrollContainerRef.current && (scrollContainerRef.current.scrollTop = scrollOffset);
@@ -54,7 +60,7 @@ export default function App() {
 		stats.showPanel(0);
 		document.body.appendChild(stats.dom);
 
-		const controls = new OrbitControls(cameraPersp, sceneContainerElement);
+		const controls = new OrbitControls(camera, sceneContainerElement);
 		controls.enableDamping = true;
 		controls.zoomSpeed = 0.3;
 		let isOrbitting = false;
@@ -88,52 +94,34 @@ export default function App() {
 			scene.laptop_2.updateLayout();
 			scene.laptop_3.updateLayout();
 
-			let raycastDidHit = false;
+			camera.htmlNeedsLayout = true;
 
-			for (let i = 0; i < cameraRenderTargetPairs.length; i++) {
-				const pair = cameraRenderTargetPairs[i];
-				pair.camera.htmlNeedsLayout = true;
+			const raycastPixels = raycast.intersectRenderedPixels({
+				quad: raycastQuad,
+				renderer,
+				scene,
+				camera: camera,
+				renderTarget: renderTarget,
+				windowX: mouseX,
+				windowY: mouseY,
+			});
+			const raycastDidHit = raycastPixels !== null;
 
-				const raycastPixels = raycast.intersectRenderedPixels({
+			renderer.render({
+				scene,
+				camera: camera,
+				renderTarget: renderTarget,
+			});
+
+			if (SHOW_DEBUG_QUAD) {
+				camera.showQuad({
 					quad: raycastQuad,
-					renderer,
-					scene,
-					camera: pair.camera,
-					renderTarget: pair.renderTarget,
-					windowX: mouseX,
-					windowY: mouseY,
+					distance: 10,
+					width: renderTarget.bounds.width,
+					height: renderTarget.bounds.height,
 				});
-				raycastDidHit = raycastDidHit || raycastPixels !== null;
-
-				renderer.render({
-					scene,
-					camera: pair.camera,
-					renderTarget: pair.renderTarget,
-				});
-
-				if (showDebugQuad) {
-					pair.camera.showQuad({
-						quad: raycastQuad,
-						distance: 10,
-						width: pair.renderTarget.bounds.width,
-						height: pair.renderTarget.bounds.height,
-					});
-				}
 			}
-
-			for (let i = 0; i < cameraRenderTargetPairs.length; i++) {
-				const pair = cameraRenderTargetPairs[i];
-				if (raycastDidHit) {
-					pair.renderTarget.enableInteractions({
-						obstructingElements: [renderAdapter.domElement],
-					});
-				} else {
-					pair.renderTarget.disableInteractions({
-						obstructingElements: [renderAdapter.domElement],
-					});
-				}
-			}
-
+			
 			controls.enabled = isOrbitting || !raycastDidHit;
 			controls.update();
 
@@ -153,7 +141,8 @@ export default function App() {
 	}, []);
 
 	return (
-		<div className="w-full h-full flex flex-col items-center m-auto gap-8 bg-slate-800">
+		<div className="w-full h-full flex flex-col items-center m-auto gap-8 bg-slate-800 relative">
+			
 			<div className="flex flex-col gap-8 m-auto w-full h-full">
 				<div
 					// @ts-expect-error name is valid for querySelector
@@ -162,14 +151,15 @@ export default function App() {
 				>
 					<ZHTMLRenderViewPersp
 						className="absolute left-0 top-0 w-full h-full"
-						renderTarget={renderTargets[0]}
+						renderTarget={renderTarget}
 						glContainerName="gl_container_element"
 					>
 						<div
 							data-object-uuid={scene.laptop_1.htmlObject.uuid}
+							style={screenSize ? { width: screenSize.x, height: screenSize.y } : undefined}
 							className="hidden"
 						>
-							<div className="border-4 border-red-300 w-full h-full flex flex-col items-center justify-center gap-4 bg-blue-500 text-white p-4">
+							<div className="border-4 border-red-300 w-full h-full flex flex-col items-center justify-center gap-4 bg-blue-500 text-white p-4 pointer-events-auto user-select-auto">
 								<span className="font-semibold text-xl select-none">HTML Inside WebGL</span>
 								<input
 									className="w-full h-8 px-4 py-2 rounded-full bg-white text-black font-base"
@@ -185,11 +175,12 @@ export default function App() {
 							data-object-uuid={scene.laptop_2.htmlObject.uuid}
 							// @ts-expect-error name is valid for querySelector
 							name="laptop_2_element"
+							style={screenSize ? { width: screenSize.x, height: screenSize.y } : undefined}
 							className="hidden"
 						>
 							<div
 								ref={scrollContainerRef}
-								className="w-full h-full flex flex-col bg-pink-500 text-white overflow-scroll p-4"
+								className="w-full h-full flex flex-col bg-pink-500 text-white overflow-scroll p-4 pointer-events-auto user-select-auto"
 								onScroll={(e) => setScrollOffset((e.target as HTMLDivElement).scrollTop)}
 							>
 								<span className="font-semibold text-xl select-none">Scrollable Content</span>
@@ -203,9 +194,10 @@ export default function App() {
 							data-object-uuid={scene.laptop_3.htmlObject.uuid}
 							// @ts-expect-error name is valid for querySelector
 							name="laptop_3_element"
+							style={screenSize ? { width: screenSize.x, height: screenSize.y } : undefined}
 							className="hidden"
 						>
-							<div className="w-full h-full flex flex-col gap-2 bg-lime-500 text-white overflow-scroll p-4">
+							<div className="w-full h-full flex flex-col gap-2 bg-lime-500 text-white overflow-scroll p-4 pointer-events-auto user-select-auto">
 								<span className="font-base text-lg text-center">
 									GIFs Work Too <span className="text-3xl">🎉</span>
 								</span>

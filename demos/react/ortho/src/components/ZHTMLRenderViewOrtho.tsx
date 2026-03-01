@@ -24,6 +24,7 @@ export function ZHTMLRenderViewOrtho({
 				<div
 					data-render-target-uuid={renderTarget.uuid}
 					data-render-target-type="camera"
+					className="pointer-events-none user-select-none"
 				>
 					{children}
 				</div>

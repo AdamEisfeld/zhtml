@@ -7,9 +7,9 @@
 - **Depth integration** — HTML is rendered as geometry in the WebGL scene; 3D objects can occlude HTML and vice versa
 - **Scene lighting** — HTML surfaces can receive shadows and participate in Phong lighting via `ZHTMLMaterialPhong`
 - **Multiple camera types** — Perspective, orthographic, and stereo (VR) cameras with built-in HTML alignment
-- **Hit testing** — Pixel-based and object-based raycasting to detect when the cursor is over HTML vs 3D geometry
-- **Interaction management** — Enable/disable pointer events based on hit results so orbit controls and HTML inputs work correctly
-- **Flexible layout** — Geometry solvers for explicit, implicit (ResizeObserver), or fixed sizing of HTML planes
+- **Hit testing** — Pixel-based and object-based raycasting to detect when the cursor is over HTML vs 3D geometry (optional, for advanced use)
+- **Interaction management** — Camera div and GL container use pointer-events so orbit controls and HTML inputs work correctly; optional programmatic control via hit testing
+- **Flexible geometry** — Create your own plane (or other geometry) for HTML objects; use embed or overlay material as needed
 
 ## Installation
 
@@ -31,7 +31,7 @@ import {
   ZHTMLWebGLRenderAdapter,
   ZHTMLPerspectiveCamera,
   ZHTMLObject3D,
-  ZHTMLGeometrySolverPlane,
+  ZHTMLInternalMaterialEmbed,
   ZHTMLMaterialPhong,
 } from 'zhtml';
 
@@ -52,12 +52,9 @@ scene.add(camera);
 
 // 4. Create HTML object with geometry
 const htmlObject = new ZHTMLObject3D({});
-const geometrySolver = new ZHTMLGeometrySolverPlane({
-  object: htmlObject,
-  mode: 'embed',
-  config: { style: 'explicit', size: { width: 400, height: 300 } },
-});
-htmlObject.htmlGeometryNode = geometrySolver.geometryNode;
+const geometryNode = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new ZHTMLInternalMaterialEmbed());
+geometryNode.scale.set(400, 300, 1);
+htmlObject.htmlGeometryNode = geometryNode;
 
 const effectMaterial = new ZHTMLMaterialPhong();
 const effectNode = new THREE.Mesh(
@@ -86,15 +83,23 @@ animate();
 
 zhtml requires a specific DOM structure so it can find and position HTML elements. The render target looks for elements by `data-render-target-uuid` and `data-render-target-type`, and HTML content must use `data-object-uuid` to match `ZHTMLObject3D` instances.
 
-### Required Structure
+### Embed vs Overlay
+
+Div ordering determines how HTML and WebGL compose:
+
+- **Embed** — Two overlapping divs: scene first (containing the camera div with your HTML object divs), then the GL container. The GL view renders on top of the HTML layer. Use the embed material on the mesh backing your HTML objects so it "cuts out" the WebGL render, revealing the HTML below. The scene div must contain the camera div within it.
+
+- **Overlay** — Opposite order: GL container first, then the scene. Use the overlay material on the mesh so the GL is not cut out; HTML appears on top.
+
+### Required Structure (Embed)
 
 ```html
 <!-- Scene container: must have data-render-target-uuid and data-render-target-type="scene" -->
 <div data-render-target-uuid="<renderTarget.uuid>" data-render-target-type="scene"
      style="position: absolute; width: 100%; height: 100%;">
-  <!-- Camera container: holds HTML elements, receives camera CSS transform -->
+  <!-- Camera container: holds HTML elements, receives camera CSS transform. Use pointer-events: none; user-select: none so it does not capture events. -->
   <div data-render-target-uuid="<renderTarget.uuid>" data-render-target-type="camera"
-       style="position: absolute; width: 100%; height: 100%;">
+       style="position: absolute; width: 100%; height: 100%; pointer-events: none; user-select: none;">
     <!-- HTML content: must have data-object-uuid matching your ZHTMLObject3D.uuid -->
     <div data-object-uuid="<htmlObject.uuid>" style="position: absolute; width: 400px; height: 300px;">
       <div style="width: 100%; height: 100%; background: blue; color: white;">
@@ -103,26 +108,32 @@ zhtml requires a specific DOM structure so it can find and position HTML element
     </div>
   </div>
 </div>
-<!-- WebGL canvas container: place the renderer.element here -->
+<!-- WebGL canvas container: place the renderer.element here. Use pointer-events: none so it does not capture mouse events. -->
 <div name="gl_container" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></div>
 ```
 
+For overlay, use the same structure but place the GL container before the scene div.
+
 The WebGL canvas (`htmlRenderer.element`) and the scene/camera divs must be siblings within the same positioned container. The render target's `sceneElement` and `cameraElement` are resolved via `document.querySelector` using the render target's UUID. Use `buildSceneContainer` and `buildCameraContainer` from `zhtml` if creating the structure programmatically; you must still add the `data-render-target-uuid` and `data-render-target-type` attributes to link them to your render target.
+
+### Interactive HTML Objects
+
+To make an HTML 3D object interactive (inputs, buttons, scroll, etc.), enable pointer-events and user-select on its content div using CSS (e.g. `pointer-events: auto; user-select: auto` on the inner div that holds the actual content).
+
+The GL container has `pointer-events: none`, so it does not capture mouse events. Orbit controls (or similar) attach to the DOM and receive events when the cursor is over empty space. When the cursor is over an interactive HTML element, that element captures the event and orbit controls do not receive it. No raycasting is needed for basic interaction switching.
 
 ## Render Targets
 
-### Enabling Interactions
+### Programmatic Interaction Control
 
-By default, the scene element has `pointer-events: none` so mouse events pass through to orbit controls. When the cursor is over HTML (detected via raycast), call:
-
-```ts
-renderTarget.enableInteractions({ obstructingElements: [glRenderer.domElement] });
-```
-
-This enables pointer events on the HTML and disables them on the WebGL canvas. When not over HTML:
+For advanced use cases where you need programmatic control over which layer receives events (e.g. a different interaction model), use `enableInteractions` and `disableInteractions`. With the default setup—camera div `pointer-events: none`, content divs `pointer-events: auto`, and GL container `pointer-events: none`—interactions work without calling these methods.
 
 ```ts
-renderTarget.disableInteractions({ obstructingElements: [glRenderer.domElement] });
+// Enable pointer events on the HTML layer and disable them on the WebGL canvas
+renderTarget.enableInteractions({ obstructingElements: [renderAdapter.domElement] });
+
+// Disable pointer events on the HTML layer and re-enable them on the WebGL canvas
+renderTarget.disableInteractions({ obstructingElements: [renderAdapter.domElement] });
 ```
 
 ## Cameras
@@ -173,32 +184,20 @@ Extends `THREE.Object3D`. Links 3D geometry to DOM elements.
 - **`htmlUpdateLayout()`** — Call to recompute the transform style from the object's world matrix.
 - **`getAllElements()`** — Returns all DOM elements with `data-object-uuid` matching this object's UUID.
 
-## Geometry Solvers
+## Geometry for HTML Objects
 
-### ZHTMLGeometrySolverPlane
-
-Creates a plane mesh and syncs its size with HTML elements.
-
-** Embed vs Overlay **
-
-- **`mode: 'embed'`** — Cuts a hole in the WebGL scene. HTML shows through where the geometry is; the geometry writes to the depth buffer so 3D objects can pass in front or behind. Use for HTML panels integrated into the scene (e.g. laptop screens, signs).
-
-- **`mode: 'overlay'`** — Renders HTML on top without depth testing. Use for UI overlays that should always appear in front.
-
-**Config styles:**
-
-- **`style: 'explicit'`** — Fixed size. Requires `size: { width, height }`.
-- **`style: 'implicit'`** — Size driven by the first element's `offsetWidth`/`offsetHeight` via `ResizeObserver`.
-- **`style: 'none'`** — Unit plane (1×1); you scale it yourself.
+Geometry is not fundamentally required for overlays. For embeds, you create a mesh whose material "cuts out" the WebGL render to reveal the HTML below. Typically you create a plane, apply `ZHTMLInternalMaterialEmbed` (for embed) or `ZHTMLInternalMaterialOverlay` (for overlay), and assign it to `htmlObject.htmlGeometryNode`. The mesh defines the screen-space region where HTML appears.
 
 ```ts
-const solver = new ZHTMLGeometrySolverPlane({
-  object: htmlObject,
-  mode: 'embed',
-  config: { style: 'explicit', size: { width: 400, height: 300 } },
-});
-htmlObject.htmlGeometryNode = solver.geometryNode;
+const geometryNode = new THREE.Mesh(
+  new THREE.PlaneGeometry(1, 1),
+  new ZHTMLInternalMaterialEmbed()
+);
+geometryNode.scale.set(400, 300, 1);
+htmlObject.htmlGeometryNode = geometryNode;
 ```
+
+For dynamic sizing, you can set the plane's scale to match your HTML element's `offsetWidth` and `offsetHeight`, and use a `ResizeObserver` to update the scale when the element resizes. This lets your CSS control the physical size of the HTML object in 3D.
 
 ## Materials
 
@@ -230,6 +229,8 @@ Extend `ZHTMLShaderMaterial` and use the `#define HTML_PHONG` or `#include <begi
 
 ## Hit Testing (Raycast)
 
+Hit testing is for advanced use cases. You can perform hit tests to determine if the mouse or tap is over an HTML 3D object, and use that to enable or disable interactions, show tooltips, or run other logic.
+
 ### Pixel-based: `intersectRenderedPixels`
 
 Renders the scene to an offscreen target with color picking and reads the pixel at the cursor. Use to detect when the cursor is over any HTML (respecting occlusion).
@@ -249,10 +250,10 @@ const result = raycast.intersectRenderedPixels({
 });
 
 if (result) {
-  // Cursor is over HTML
-  renderTarget.enableInteractions({ obstructingElements: [glRenderer.domElement] });
+  // Cursor is over HTML — e.g. enable programmatic interaction control
+  renderTarget.enableInteractions({ obstructingElements: [renderAdapter.domElement] });
 } else {
-  renderTarget.disableInteractions({ obstructingElements: [glRenderer.domElement] });
+  renderTarget.disableInteractions({ obstructingElements: [renderAdapter.domElement] });
 }
 ```
 
@@ -325,18 +326,21 @@ function renderLoop() {
     if (obj instanceof ZHTMLObject3D) obj.htmlNeedsLayout = true;
   });
 
-  // 2. Hit test (optional)
-  const hit = raycast.intersectRenderedPixels({ quad, renderer, scene, camera, renderTarget, windowX: mx, windowY: my });
-  if (hit) renderTarget.enableInteractions({ obstructingElements: [glRenderer.domElement] });
-  else renderTarget.disableInteractions({ obstructingElements: [glRenderer.domElement] });
-
-  // 3. Render
+  // 2. Render
   htmlRenderer.render({ scene, camera, renderTarget });
 
-  // 4. Update controls
+  // 3. Update controls
   controls.update();
   requestAnimationFrame(renderLoop);
 }
+```
+
+Advanced: add hit testing when you need programmatic control over interactions:
+
+```ts
+const hit = raycast.intersectRenderedPixels({ quad, renderer, scene, camera, renderTarget, windowX: mx, windowY: my });
+if (hit) renderTarget.enableInteractions({ obstructingElements: [renderAdapter.domElement] });
+else renderTarget.disableInteractions({ obstructingElements: [renderAdapter.domElement] });
 ```
 
 ## Demos
@@ -386,7 +390,6 @@ Demo `package.json` files use `"zhtml": "file:../../.."` (or `"file:../../../.."
 | `ZHTMLStereoCamera` | Stereo camera with `cameraLeft` and `cameraRight` |
 | `ZHTMLObject3D` | 3D object linked to DOM elements |
 | `ZHTMLQuad` | Offscreen quad for pixel raycasting |
-| `ZHTMLGeometrySolverPlane` | Plane geometry solver (explicit, implicit, or none) |
 | `ZHTMLRaycast` | Hit testing (`intersectRenderedPixels`, `intersectRenderedObjects`) |
 | `ZHTMLOrbitControls` | Orbit controls with attach/detach and `onShouldBegin` |
 | `ZHTMLShaderMaterial` | Base shader material for HTML rendering |

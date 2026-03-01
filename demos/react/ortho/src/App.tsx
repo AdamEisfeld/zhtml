@@ -8,7 +8,6 @@ import {
 	ZHTMLWebGLRenderAdapter,
 	ZHTMLRaycast,
 	ZHTMLQuad,
-	ZHTMLCameraInterface,
 } from 'zhtml';
 import { ZHTMLRenderViewOrtho } from '@/components/ZHTMLRenderViewOrtho';
 import { DemoScene } from '../../shared/DemoScene';
@@ -21,14 +20,11 @@ glRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
 const renderer = new ZHTMLRenderer({ renderAdapter });
 
-const cameraOrtho = new ZHTMLOrthographicCamera(-1, 1, 1, -1, 1, 20000);
-cameraOrtho.position.set(500, 500, 500);
-cameraOrtho.lookAt(0, 0, 0);
-scene.add(cameraOrtho);
-const cameraRenderTargetPairs: { camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }[] = [
-	{ camera: cameraOrtho, renderTarget: new ZHTMLRenderTarget() },
-];
-const renderTargets = cameraRenderTargetPairs.map((p) => p.renderTarget);
+const camera = new ZHTMLOrthographicCamera(-1, 1, 1, -1, 1, 20000);
+camera.position.set(500, 500, 500);
+camera.lookAt(0, 0, 0);
+scene.add(camera);
+const renderTarget = new ZHTMLRenderTarget();
 const showDebugQuad = false;
 
 export default function App() {
@@ -55,7 +51,7 @@ export default function App() {
 		stats.showPanel(0);
 		document.body.appendChild(stats.dom);
 
-		const controls = new OrbitControls(cameraOrtho, sceneContainerElement);
+		const controls = new OrbitControls(camera, sceneContainerElement);
 		controls.enableDamping = true;
 		controls.zoomSpeed = 0.3;
 		let isOrbitting = false;
@@ -91,48 +87,32 @@ export default function App() {
 
 			let raycastDidHit = false;
 
-			for (let i = 0; i < cameraRenderTargetPairs.length; i++) {
-				const pair = cameraRenderTargetPairs[i];
-				pair.camera.htmlNeedsLayout = true;
+			camera.htmlNeedsLayout = true;
 
-				const raycastPixels = raycast.intersectRenderedPixels({
+			const raycastPixels = raycast.intersectRenderedPixels({
+				quad: raycastQuad,
+				renderer,
+				scene,
+				camera: camera,
+				renderTarget: renderTarget,
+				windowX: mouseX,
+				windowY: mouseY,
+			});
+			raycastDidHit = raycastDidHit || raycastPixels !== null;
+
+			renderer.render({
+				scene,
+				camera: camera,
+				renderTarget: renderTarget,
+			});
+
+			if (showDebugQuad) {
+				camera.showQuad({
 					quad: raycastQuad,
-					renderer,
-					scene,
-					camera: pair.camera,
-					renderTarget: pair.renderTarget,
-					windowX: mouseX,
-					windowY: mouseY,
+					distance: 10,
+					width: renderTarget.bounds.width,
+					height: renderTarget.bounds.height,
 				});
-				raycastDidHit = raycastDidHit || raycastPixels !== null;
-
-				renderer.render({
-					scene,
-					camera: pair.camera,
-					renderTarget: pair.renderTarget,
-				});
-
-				if (showDebugQuad) {
-					pair.camera.showQuad({
-						quad: raycastQuad,
-						distance: 10,
-						width: pair.renderTarget.bounds.width,
-						height: pair.renderTarget.bounds.height,
-					});
-				}
-			}
-
-			for (let i = 0; i < cameraRenderTargetPairs.length; i++) {
-				const pair = cameraRenderTargetPairs[i];
-				if (raycastDidHit) {
-					pair.renderTarget.enableInteractions({
-						obstructingElements: [renderAdapter.domElement],
-					});
-				} else {
-					pair.renderTarget.disableInteractions({
-						obstructingElements: [renderAdapter.domElement],
-					});
-				}
 			}
 
 			controls.enabled = isOrbitting || !raycastDidHit;
@@ -163,7 +143,7 @@ export default function App() {
 				>
 					<ZHTMLRenderViewOrtho
 						className="absolute left-0 top-0 w-full h-full"
-						renderTarget={renderTargets[0]}
+						renderTarget={renderTarget}
 						glContainerName="gl_container_element"
 					>
 						<div

@@ -26,6 +26,7 @@ export function ZHTMLRenderViewStereo({
 				<div
 					data-render-target-uuid={leftRenderTarget.uuid}
 					data-render-target-type="camera"
+					className="pointer-events-none user-select-none"
 				>
 					{children}
 				</div>
@@ -38,6 +39,7 @@ export function ZHTMLRenderViewStereo({
 				<div
 					data-render-target-uuid={rightRenderTarget.uuid}
 					data-render-target-type="camera"
+					className="pointer-events-none user-select-none"
 				>
 					{children}
 				</div>

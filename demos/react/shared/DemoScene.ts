@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { DemoLaptop } from './DemoLaptop';
 
+import type { DemoLaptopReady } from './DemoLaptop';
+
+export interface DemoSceneOptions {
+	onReady?: (ready: DemoLaptopReady) => void;
+}
+
 export class DemoScene extends THREE.Scene {
 	laptop_1: DemoLaptop;
 	laptop_2: DemoLaptop;
@@ -9,21 +15,23 @@ export class DemoScene extends THREE.Scene {
 	light_1: THREE.PointLight;
 	light_2: THREE.PointLight;
 
-	constructor() {
+	constructor(options?: DemoSceneOptions) {
 		super();
 
-		const laptop_1 = new DemoLaptop();
+		const laptop_1 = new DemoLaptop({
+			onReady: options?.onReady,
+		});
 		laptop_1.position.set(0, 0, 0);
 		laptop_1.rotation.set(0, 0, 0);
 		this.add(laptop_1);
 
 		const laptop_2 = new DemoLaptop();
-		laptop_2.position.set(300, 100, -400);
+		laptop_2.position.set(-300, 100, -400);
 		laptop_2.rotation.set(0, -0.4, 0);
 		this.add(laptop_2);
 
 		const laptop_3 = new DemoLaptop();
-		laptop_3.position.set(-300, 200, -400);
+		laptop_3.position.set(300, 200, -400);
 		laptop_3.rotation.set(0, 0.4, 0);
 		const laptop_3_box_geometry = new THREE.BoxGeometry(400, 100, 300);
 		const laptop_3_box_material = new THREE.MeshPhongMaterial({

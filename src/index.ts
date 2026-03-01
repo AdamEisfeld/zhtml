@@ -23,12 +23,6 @@ export { ZHTMLOrbitControls } from './controls/ZHTMLOrbitControls';
 export { ZHTMLObject3D } from './objects/ZHTMLObject3D';
 export { ZHTMLQuad } from './objects/ZHTMLQuad';
 
-// Geometry solvers
-export {
-  ZHTMLGeometrySolverPlane,
-  type ZHTMLGeometrySolverPlaneConfig,
-} from './geometrySolvers/ZHTMLGeometrySolverPlane';
-
 // Raycast
 export { ZHTMLRaycast } from './raycast/ZHTMLRaycast';
 export type { ZHTMLRaycastPixelsResult } from './raycast/ZHTMLRaycastPixelsResult';
