@@ -14,7 +14,8 @@ export class DemoScene extends THREE.Scene {
 	groundplane: THREE.Mesh;
 	light_1: THREE.PointLight;
 	light_2: THREE.PointLight;
-
+	light_3: THREE.PointLight;
+	
 	constructor(options?: DemoSceneOptions) {
 		super();
 
@@ -41,6 +42,7 @@ export class DemoScene extends THREE.Scene {
 		});
 		const laptop_3_box = new THREE.Mesh(laptop_3_box_geometry, laptop_3_box_material);
 		laptop_3_box.position.set(0, -170, 100);
+		laptop_3_box.rotation.set(0, 0.1, 0);
 		laptop_3_box.castShadow = true;
 		laptop_3_box.receiveShadow = true;
 		laptop_2.add(laptop_3_box);
@@ -74,12 +76,23 @@ export class DemoScene extends THREE.Scene {
 		);
 		light_2.add(light_2_sphere);
 
+		const light_3 = new THREE.PointLight('red', 2, 300, 0.0001);
+		light_3.position.set(-100, 50, 200);
+		light_3.castShadow = true;
+		this.add(light_3);
+		const light_3_sphere = new THREE.Mesh(
+			new THREE.SphereGeometry(10, 32, 32),
+			new THREE.MeshBasicMaterial({ color: 'red', fog: false })
+		);
+		light_3.add(light_3_sphere);
+
 		this.laptop_1 = laptop_1;
 		this.laptop_2 = laptop_2;
 		this.laptop_3 = laptop_3;
 		this.groundplane = ground_plane;
 		this.light_1 = light_1;
 		this.light_2 = light_2;
+		this.light_3 = light_3;
 		this.fog = new THREE.Fog('#334155', 1, 4001);
 	}
 }
