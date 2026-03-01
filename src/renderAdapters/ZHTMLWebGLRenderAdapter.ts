@@ -37,7 +37,7 @@ export class ZHTMLWebGLRenderAdapter implements ZHTMLRenderAdapterInterface {
 	}
 
 	public setSize(width: number, height: number): void {
-		this._renderer.setSize(width, height);
+		this._renderer.setSize(width, height, false);
 	}
 
 	public createOffscreenTarget(options: { width: number, height: number }): ZHTMLRenderAdapterOffscreenTargetInterface {

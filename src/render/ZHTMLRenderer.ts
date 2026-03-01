@@ -9,6 +9,7 @@ import { ZHTMLRenderTarget } from './ZHTMLRenderTarget';
 export class ZHTMLRenderer {
 
 	private _renderAdapter: ZHTMLRenderAdapterInterface;
+	private _canvas: HTMLElement;
 	private _renderTargetUuidsToRenderedObjectsThisFrame: Record<string, Record<string, ZHTMLObject3D>> = {};
 	private _renderTargetUuidsToRenderedObjectsLastFrame: Record<string, Record<string, ZHTMLObject3D>> = {};
 	private _renderTargetUuidsToCameraTransformIds: Record<string, number> = {};
@@ -17,10 +18,7 @@ export class ZHTMLRenderer {
 	private _canvasResizeObserver: ResizeObserver | null = null;
 	private _canvasBounds: DOMRectReadOnly = new DOMRectReadOnly();
 	private _canvasResizeId: number = 1;
-	private _element: HTMLElement;
-	public get element(): HTMLElement {
-		return this._element;
-	}
+
 	public htmlRendererUuid: string = THREE.MathUtils.generateUUID();
 	public get renderAdapter(): ZHTMLRenderAdapterInterface {
 		return this._renderAdapter;
@@ -30,38 +28,23 @@ export class ZHTMLRenderer {
 		return this._canvasBounds;
 	}
 
-	constructor(options: { renderAdapter: ZHTMLRenderAdapterInterface, element?: HTMLElement }) {
-
+	constructor(options: { renderAdapter: ZHTMLRenderAdapterInterface; canvas: HTMLElement }) {
 		this._renderAdapter = options.renderAdapter;
-		if (!options.element) {
-			this._element = document.createElement('div');
-			this.element.style.setProperty('position', 'absolute');
-			this.element.style.setProperty('top', '0px');
-			this.element.style.setProperty('left', '0px');
-			this.element.style.setProperty('width', '100%');
-			this.element.style.setProperty('height', '100%');
-			this.element.style.setProperty('overflow', 'hidden');
-		} else {
-			this._element = options.element;
-		}
-		this._renderAdapter.domElement.style.position = 'absolute';
-		this._renderAdapter.domElement.style.top = '0px';
-		this._renderAdapter.domElement.style.left = '0px';
-		this._renderAdapter.domElement.style.width = '100%';
-		this._renderAdapter.domElement.style.height = '100%';
-		this._element.appendChild(this._renderAdapter.domElement);
+		this._canvas = options.canvas;
+		this._canvasBounds = this._canvas.getBoundingClientRect();
+
 		this._canvasResizeObserver = new ResizeObserver(() => {
-			this._canvasBounds = this._element.getBoundingClientRect();
+			this._canvasBounds = this._canvas.getBoundingClientRect();
 			this._canvasResizeId *= -1;
 			document.dispatchEvent(new ZHTMLRenderEventCanvasResized({
-				element: this._element,
+				element: this._canvas,
 				bounds: this._canvasBounds,
 			}));
 		});
-		this._canvasResizeObserver.observe(this._element);
+		this._canvasResizeObserver.observe(this._canvas);
 
 		document.addEventListener(ZHTMLRenderEventWillRender.eventName, (event: Event) => {
-			
+
 			if (!(event instanceof ZHTMLRenderEventWillRender)) {
 				return;
 			}
@@ -77,14 +60,13 @@ export class ZHTMLRenderer {
 			if (this._renderAdapter.isRenderer(event.renderer) === false) {
 				return;
 			}
-			
+
 			// Store the object uuid for the camera that rendered it
 			const mutableObjectUuids = this._renderTargetUuidsToRenderedObjectsThisFrame[this._currentRenderTarget.uuid] || {};
 			mutableObjectUuids[event.object.uuid] = event.object;
 			this._renderTargetUuidsToRenderedObjectsThisFrame[this._currentRenderTarget.uuid] = mutableObjectUuids;
-		
-		});
 
+		});
 	}
 
 	public getRenderedObjects(): ZHTMLObject3D[] {
@@ -102,10 +84,10 @@ export class ZHTMLRenderer {
 		return Object.values(visibleObjects);
 	}
 
-	public render(options: { scene: THREE.Scene, camera: THREE.Camera & ZHTMLCameraInterface, renderTarget: ZHTMLRenderTarget }): void {
-		
+	public render(options: { scene: THREE.Scene; camera: THREE.Camera & ZHTMLCameraInterface; renderTarget: ZHTMLRenderTarget }): void {
+
 		const { scene, camera, renderTarget } = options;
-		
+
 		if (!renderTarget) {
 			throw new Error('Cannot render without a render target');
 		}
@@ -120,7 +102,7 @@ export class ZHTMLRenderer {
 
 		// MARK: - Step 1
 		// Inform the camera that it is about to render so it can prepare itself for the current bounds if needed
-		
+
 		camera.willRender({
 			bounds: renderTarget.bounds,
 		});
@@ -169,7 +151,7 @@ export class ZHTMLRenderer {
 			if (!object) {
 				throw new Error(`Cannot find object with uuid ${uuid}`);
 			}
-			
+
 			const element = renderTarget.getElementForObject(object);
 			if (!element) {
 				console.warn('Cannot find element');

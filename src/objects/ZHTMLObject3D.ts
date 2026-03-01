@@ -78,15 +78,6 @@ export class ZHTMLObject3D extends THREE.Object3D {
 		this.add(value);
 	}
 
-	// Elements
-
-	/**
-	 * Returns all HTML elements that are tied to this object in the DOM.
-	 */
-	public getAllElements(): HTMLElement[] {
-		return document.querySelectorAll(`[data-object-uuid="${this.uuid}"]`) as unknown as HTMLElement[];
-	}
-
 	// Render Type
 
 	// Transform Style

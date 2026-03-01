@@ -51,8 +51,6 @@ export { ZHTMLMaterialPhong } from './materials/ZHTMLMaterialPhong';
 export {
   getCameraTransformStyle,
   getElementTransformStyle,
-  buildSceneContainer,
-  buildCameraContainer,
 } from './utils/ZHTMLRendererUtils';
 export type {
   ZHTMLRenderMatrix,

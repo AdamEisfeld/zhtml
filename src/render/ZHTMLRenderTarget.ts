@@ -7,58 +7,42 @@ export class ZHTMLRenderTarget {
 
 	private _sceneElement: HTMLElement | null = null;
 	private _cameraElement: HTMLElement | null = null;
-
-	public get sceneElement(): HTMLElement {
-		// Return cached if available
-		if (this._sceneElement) {
-			return this._sceneElement;
-		}
-		// Get element using querySelector, must have data-target-uuid of this.uuid and data-type of 'scene'
-		const element = document.querySelector(`[data-render-target-uuid="${this.uuid}"][data-render-target-type="scene"]`);
-		if (element && element instanceof HTMLElement) {
-			this.sceneElement = element;
-			return element;
-		}
-		throw new Error('No scene element found');
-	}
-
-	private set sceneElement(value: HTMLElement) {
-		value.style.setProperty('position', 'absolute');
-		value.style.setProperty('overflow', 'hidden');
-		value.style.setProperty('userSelect', 'none');
-		value.style.setProperty('transformOrigin', '0 0');
-		this._sceneElement = value;
-	}
-
-	public get cameraElement(): HTMLElement {
-		// Return cached if available
-		if (this._cameraElement) {
-			return this._cameraElement;
-		}
-		// Get element using querySelector, must have data-target-uuid of this.uuid and data-type of 'camera'
-		const element = document.querySelector(`[data-render-target-uuid="${this.uuid}"][data-render-target-type="camera"]`);
-		if (element && element instanceof HTMLElement) {
-			this.cameraElement = element;
-			return element;
-		}
-		throw new Error('No camera element found');
-	}
-
-	private set cameraElement(value: HTMLElement) {
-		value.style.setProperty('position', 'absolute');
-		value.style.setProperty('top', '0px');
-		value.style.setProperty('left', '0px');
-		value.style.setProperty('width', '100%');
-		value.style.setProperty('height', '100%');
-		value.style.setProperty('pointerEvents', 'none');
-		value.style.setProperty('transform-style', 'preserve-3d');
-		value.style.setProperty('user-select', 'none');
-		this._cameraElement = value;
-	}
-	
 	private _bounds: DOMRectReadOnly = new DOMRectReadOnly();
 	private _boundsResizeId: number = 1;
 	private _objectUuidToHtmlElement: Record<string, HTMLElement> = {};
+
+	constructor(options: { sceneElement: HTMLElement; cameraElement: HTMLElement }) {
+		this._sceneElement = options.sceneElement;
+		this._cameraElement = options.cameraElement;
+
+		options.sceneElement.style.setProperty('position', 'absolute');
+		options.sceneElement.style.setProperty('overflow', 'hidden');
+		options.sceneElement.style.setProperty('userSelect', 'none');
+		options.sceneElement.style.setProperty('transformOrigin', '0 0');
+
+		options.cameraElement.style.setProperty('position', 'absolute');
+		options.cameraElement.style.setProperty('top', '0px');
+		options.cameraElement.style.setProperty('left', '0px');
+		options.cameraElement.style.setProperty('width', '100%');
+		options.cameraElement.style.setProperty('height', '100%');
+		options.cameraElement.style.setProperty('pointerEvents', 'none');
+		options.cameraElement.style.setProperty('transform-style', 'preserve-3d');
+		options.cameraElement.style.setProperty('user-select', 'none');
+	}
+
+	public get sceneElement(): HTMLElement {
+		if (!this._sceneElement) {
+			throw new Error('Render target has been disposed');
+		}
+		return this._sceneElement;
+	}
+
+	public get cameraElement(): HTMLElement {
+		if (!this._cameraElement) {
+			throw new Error('Render target has been disposed');
+		}
+		return this._cameraElement;
+	}
 
 	public get bounds(): DOMRectReadOnly {
 		return this._bounds;
@@ -68,34 +52,34 @@ export class ZHTMLRenderTarget {
 		return this._boundsResizeId;
 	}
 
+	public registerElementForObject(object: ZHTMLObject3D, element: HTMLElement): void {
+		element.style.position = 'absolute';
+		element.style.transformStyle = 'preserve-3d';
+		element.style.transformOrigin = '50% 50%';
+		element.style.backfaceVisibility = 'visible';
+		this._objectUuidToHtmlElement[object.uuid] = element;
+	}
+
+	public unregisterObject(object: ZHTMLObject3D): void {
+		delete this._objectUuidToHtmlElement[object.uuid];
+	}
+
 	public calculateBounds(options: { resizeId: number }): void {
-		if (!this.sceneElement) {
+		if (!this._sceneElement) {
 			return;
 		}
-		this._bounds = this.sceneElement.getBoundingClientRect();
+		this._bounds = this._sceneElement.getBoundingClientRect();
 		this._boundsResizeId = options.resizeId;
 	}
-	
+
 	public getElementForObject(object: ZHTMLObject3D): HTMLElement | null {
-		const cachedElement = this._objectUuidToHtmlElement[object.uuid];
-		if (cachedElement) {
-			return cachedElement;
-		}
-		const element = this.cameraElement.querySelector(`[data-object-uuid="${object.uuid}"]`);
-		if (element && element instanceof HTMLElement) {
-			element.style.position = 'absolute';
-			element.style.transformStyle = 'preserve-3d';
-			element.style.transformOrigin = '50% 50%';
-			element.style.backfaceVisibility = 'visible';
-			this._objectUuidToHtmlElement[object.uuid] = element;
-			return element;
-		}
-		return null;
+		return this._objectUuidToHtmlElement[object.uuid] ?? null;
 	}
 
 	dispose(): void {
-		this.sceneElement.remove();
-		this.cameraElement.remove();
+		this._sceneElement = null;
+		this._cameraElement = null;
+		this._objectUuidToHtmlElement = {};
 	}
-		
+
 }

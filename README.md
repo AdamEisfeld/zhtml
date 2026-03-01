@@ -9,6 +9,7 @@
 - **Multiple camera types** — Perspective, orthographic, and stereo (VR) cameras with built-in HTML alignment
 - **Hit testing** — Pixel-based and object-based raycasting to detect when the cursor is over HTML vs 3D geometry (optional, for advanced use)
 - **Interaction management** — Camera div and GL container use pointer-events so orbit controls and HTML inputs work correctly; optional programmatic control via hit testing
+- **Automatic culling** — HTML elements are shown only when their 3D object is rendered (in view); off-screen or occluded objects have their elements hidden
 - **Flexible geometry** — Create your own plane (or other geometry) for HTML objects; use embed or overlay material as needed
 
 ## Installation
@@ -35,15 +36,14 @@ import {
   ZHTMLMaterialPhong,
 } from 'zhtml';
 
-// 1. Create Three.js scene and WebGL renderer
+// 1. Create Three.js scene. Define canvas in your DOM, then create WebGL renderer with it
 const scene = new THREE.Scene();
-const glRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const canvas = document.getElementById('canvas')!;
+const glRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas });
 glRenderer.shadowMap.enabled = true;
 
 // 2. Create zhtml renderer and render target
 const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
-const htmlRenderer = new ZHTMLRenderer({ renderAdapter });
-const renderTarget = new ZHTMLRenderTarget();
 
 // 3. Create camera and add to scene
 const camera = new ZHTMLPerspectiveCamera(50, 1, 0.1, 1000);
@@ -66,9 +66,14 @@ effectNode.position.z = 1;
 htmlObject.add(effectNode);
 scene.add(htmlObject);
 
-// 5. Mount: append renderer.element to your container, and ensure DOM structure exists
-// (see DOM Structure section below)
-document.getElementById('gl-container')!.appendChild(htmlRenderer.element);
+// 5. Create render target and renderer (you own the DOM; pass element refs)
+const sceneElement = document.getElementById('scene')!;
+const cameraElement = document.getElementById('camera')!;
+
+const renderTarget = new ZHTMLRenderTarget({ sceneElement, cameraElement });
+renderTarget.registerElementForObject(htmlObject, document.getElementById('html-content')!);
+
+const htmlRenderer = new ZHTMLRenderer({ renderAdapter, canvas });
 
 // 6. Animation loop
 function animate() {
@@ -79,42 +84,60 @@ function animate() {
 animate();
 ```
 
-## DOM Structure
+## Explicit Elements
 
-zhtml requires a specific DOM structure so it can find and position HTML elements. The render target looks for elements by `data-render-target-uuid` and `data-render-target-type`, and HTML content must use `data-object-uuid` to match `ZHTMLObject3D` instances.
+You own the DOM structure entirely. zhtml never creates, appends, or removes nodes. You create the elements, pass references to zhtml, and control the WebGL canvas yourself.
 
-### Embed vs Overlay
+### Setup
 
-Div ordering determines how HTML and WebGL compose:
+1. **ZHTMLRenderTarget** — Pass `sceneElement` and `cameraElement` (the divs that define the viewport bounds and hold your HTML content).
+2. **registerElementForObject** — Link each `ZHTMLObject3D` to its HTML div via `renderTarget.registerElementForObject(object, element)`.
+3. **ZHTMLRenderer** — Pass `canvas` for bounds observation. zhtml observes this element for resize; it never appends to it.
+4. **Canvas in template** — Define the canvas in your template and pass it to `new THREE.WebGLRenderer({ canvas })`. Pass the same canvas to ZHTMLRenderer as `canvas`.
 
-- **Embed** — Two overlapping divs: scene first (containing the camera div with your HTML object divs), then the GL container. The GL view renders on top of the HTML layer. Use the embed material on the mesh backing your HTML objects so it "cuts out" the WebGL render, revealing the HTML below. The scene div must contain the camera div within it.
-
-- **Overlay** — Opposite order: GL container first, then the scene. Use the overlay material on the mesh so the GL is not cut out; HTML appears on top.
-
-### Required Structure (Embed)
+### Structure (Embed)
 
 ```html
-<!-- Scene container: must have data-render-target-uuid and data-render-target-type="scene" -->
-<div data-render-target-uuid="<renderTarget.uuid>" data-render-target-type="scene"
-     style="position: absolute; width: 100%; height: 100%;">
-  <!-- Camera container: holds HTML elements, receives camera CSS transform. Use pointer-events: none; user-select: none so it does not capture events. -->
-  <div data-render-target-uuid="<renderTarget.uuid>" data-render-target-type="camera"
-       style="position: absolute; width: 100%; height: 100%; pointer-events: none; user-select: none;">
-    <!-- HTML content: must have data-object-uuid matching your ZHTMLObject3D.uuid -->
-    <div data-object-uuid="<htmlObject.uuid>" style="position: absolute; width: 400px; height: 300px;">
-      <div style="width: 100%; height: 100%; background: blue; color: white;">
-        Your HTML content here
+<div id="scene-container" style="position: relative; width: 100%; height: 100%;">
+  <!-- Scene: bounds for this viewport -->
+  <div id="scene" style="position: absolute; width: 100%; height: 100%;">
+    <!-- Camera: holds HTML, receives CSS transform -->
+    <div id="camera" style="position: absolute; width: 100%; height: 100%; pointer-events: none;">
+      <div id="html-content" style="position: absolute; width: 400px; height: 300px;">
+        Your HTML content
       </div>
     </div>
   </div>
+  <!-- Canvas: defined in template, passed to WebGLRenderer -->
+  <canvas id="canvas" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
 </div>
-<!-- WebGL canvas container: place the renderer.element here. Use pointer-events: none so it does not capture mouse events. -->
-<div name="gl_container" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></div>
 ```
 
-For overlay, use the same structure but place the GL container before the scene div.
+```ts
+const canvas = document.getElementById('canvas')!;
+const glRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas });
+const renderAdapter = new ZHTMLWebGLRenderAdapter(glRenderer);
 
-The WebGL canvas (`htmlRenderer.element`) and the scene/camera divs must be siblings within the same positioned container. The render target's `sceneElement` and `cameraElement` are resolved via `document.querySelector` using the render target's UUID. Use `buildSceneContainer` and `buildCameraContainer` from `zhtml` if creating the structure programmatically; you must still add the `data-render-target-uuid` and `data-render-target-type` attributes to link them to your render target.
+const renderTarget = new ZHTMLRenderTarget({
+  sceneElement: document.getElementById('scene')!,
+  cameraElement: document.getElementById('camera')!,
+});
+renderTarget.registerElementForObject(htmlObject, document.getElementById('html-content')!);
+
+const htmlRenderer = new ZHTMLRenderer({
+  renderAdapter,
+  canvas,
+});
+```
+
+### Embed vs Overlay
+
+- **Embed** — Scene div first, then canvas container. Use embed material so WebGL cuts a hole revealing HTML below.
+- **Overlay** — Canvas container first, then scene div. Use overlay material so HTML appears on top.
+
+### Stereo (Two Cameras)
+
+Create two render targets with separate scene/camera elements (e.g. left and right halves). Duplicate your HTML content in each camera div. Register each copy with its respective render target.
 
 ### Interactive HTML Objects
 
@@ -122,19 +145,11 @@ To make an HTML 3D object interactive (inputs, buttons, scroll, etc.), enable po
 
 The GL container has `pointer-events: none`, so it does not capture mouse events. Orbit controls (or similar) attach to the DOM and receive events when the cursor is over empty space. When the cursor is over an interactive HTML element, that element captures the event and orbit controls do not receive it. No raycasting is needed for basic interaction switching.
 
-## Render Targets
+### Visibility and Culling
 
-### Programmatic Interaction Control
+zhtml automatically shows or hides HTML elements based on whether their 3D object is rendered this frame. If the object is in view (not culled by the camera frustum, not occluded), its element gets `display: block` and the correct CSS transform. If the object is off-screen or occluded, its element gets `display: none`. This avoids rendering HTML for objects the user cannot see.
 
-For advanced use cases where you need programmatic control over which layer receives events (e.g. a different interaction model), use `enableInteractions` and `disableInteractions`. With the default setup—camera div `pointer-events: none`, content divs `pointer-events: auto`, and GL container `pointer-events: none`—interactions work without calling these methods.
-
-```ts
-// Enable pointer events on the HTML layer and disable them on the WebGL canvas
-renderTarget.enableInteractions({ obstructingElements: [renderAdapter.domElement] });
-
-// Disable pointer events on the HTML layer and re-enable them on the WebGL canvas
-renderTarget.disableInteractions({ obstructingElements: [renderAdapter.domElement] });
-```
+**Initial state:** Before the first render, HTML elements would otherwise appear at their default position. Start elements hidden (e.g. `className="hidden"` or `display: none`) to prevent a flash of unstyled content. zhtml does not remove the class; it overrides visibility with inline `element.style.display`, so the class becomes irrelevant once the render loop starts.
 
 ## Cameras
 
@@ -182,7 +197,6 @@ Extends `THREE.Object3D`. Links 3D geometry to DOM elements.
 - **`htmlGeometryNode`** — A `THREE.Mesh` whose material renders the HTML (usually `ZHTMLInternalMaterialEmbed` or `ZHTMLInternalMaterialOverlay`). The mesh defines the screen-space region where HTML appears.
 - **`htmlNeedsLayout`** — Set to `true` when the object's transform changes; the renderer will update the HTML element's CSS transform.
 - **`htmlUpdateLayout()`** — Call to recompute the transform style from the object's world matrix.
-- **`getAllElements()`** — Returns all DOM elements with `data-object-uuid` matching this object's UUID.
 
 ## Geometry for HTML Objects
 
@@ -250,10 +264,7 @@ const result = raycast.intersectRenderedPixels({
 });
 
 if (result) {
-  // Cursor is over HTML — e.g. enable programmatic interaction control
-  renderTarget.enableInteractions({ obstructingElements: [renderAdapter.domElement] });
-} else {
-  renderTarget.disableInteractions({ obstructingElements: [renderAdapter.domElement] });
+  // Cursor is over HTML — e.g. switch to HTML interaction mode
 }
 ```
 
@@ -335,17 +346,11 @@ function renderLoop() {
 }
 ```
 
-Advanced: add hit testing when you need programmatic control over interactions:
-
-```ts
-const hit = raycast.intersectRenderedPixels({ quad, renderer, scene, camera, renderTarget, windowX: mx, windowY: my });
-if (hit) renderTarget.enableInteractions({ obstructingElements: [renderAdapter.domElement] });
-else renderTarget.disableInteractions({ obstructingElements: [renderAdapter.domElement] });
-```
+Advanced: add hit testing when you need programmatic control over interactions (e.g. to toggle orbit controls when over HTML).
 
 ## Demos
 
-The repository includes Vue and React demos in `demos/vue` and `demos/react`, each with three variants:
+The repository includes React demos in `demos/react`, each with three variants:
 
 - **persp** — Perspective camera, single view
 - **ortho** — Orthographic camera, isometric-style view
@@ -354,15 +359,9 @@ The repository includes Vue and React demos in `demos/vue` and `demos/react`, ea
 ### Running Demos
 
 ```bash
-# Vue demos
-cd demos/vue
+cd demos/react/persp   # or ortho, stereo
 npm install
-npm run dev:persp   # or dev:ortho, dev:stereo
-
-# React demos
-cd demos/react
-npm install
-npm run dev:persp   # or dev:ortho, dev:stereo
+npm run dev
 ```
 
 ### Local Development (linking zhtml)
@@ -371,9 +370,9 @@ From the project root:
 
 ```bash
 npm run build
-cd demos/vue
+cd demos/react/persp
 npm install
-npm run dev:persp
+npm run dev
 ```
 
 Demo `package.json` files use `"zhtml": "file:../../.."` (or `"file:../../../.."` from sub-packages) to link the local build.
@@ -383,7 +382,7 @@ Demo `package.json` files use `"zhtml": "file:../../.."` (or `"file:../../../.."
 | Export | Description |
 |--------|-------------|
 | `ZHTMLRenderer` | Main renderer; manages layout, viewport, and CSS transforms |
-| `ZHTMLRenderTarget` | DOM structure and object-to-element mapping; embed or overlay |
+| `ZHTMLRenderTarget` | Pass scene/camera elements; `registerElementForObject` links objects to HTML |
 | `ZHTMLWebGLRenderAdapter` | WebGL render adapter; wraps `THREE.WebGLRenderer` |
 | `ZHTMLPerspectiveCamera` | Perspective camera with HTML alignment |
 | `ZHTMLOrthographicCamera` | Orthographic camera with HTML alignment |
@@ -398,8 +397,6 @@ Demo `package.json` files use `"zhtml": "file:../../.."` (or `"file:../../../.."
 | `ZHTMLInternalMaterialOverlay` | Internal overlay material |
 | `getCameraTransformStyle` | Utility: camera CSS transform from matrices |
 | `getElementTransformStyle` | Utility: element CSS transform from world matrix |
-| `buildSceneContainer` | Utility: create scene div |
-| `buildCameraContainer` | Utility: create camera div |
 
 ## Troubleshooting
 
@@ -413,6 +410,6 @@ The hit-detection render pass uses a debug quad. If you see `showQuad` or simila
 
 ### HTML elements not visible
 
-- Ensure each HTML container has `data-object-uuid` matching the `ZHTMLObject3D.uuid`.
-- Ensure the render target's scene/camera divs have the correct `data-render-target-uuid` and `data-render-target-type`.
+- Ensure you've called `renderTarget.registerElementForObject(object, element)` for each HTML object.
+- Ensure the scene and camera elements are passed correctly to `ZHTMLRenderTarget`.
 - Call `htmlObject.htmlNeedsLayout = true` before rendering when the object's transform changes.
